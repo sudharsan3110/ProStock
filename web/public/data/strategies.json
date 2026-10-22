@@ -1,0 +1,83 @@
+[
+  {
+    "id": "STRAT-01",
+    "name": "EMA Pullback & Volume Surge",
+    "version": "v2.1.0",
+    "state": "ACTIVE",
+    "author": "ProStock Core",
+    "description": "Multi-timeframe trend continuation trading pullbacks to 20/50 EMA stack with institutional volume validation.",
+    "timeframes": [
+      "15m",
+      "1h"
+    ],
+    "markets": [
+      "NSE",
+      "US"
+    ],
+    "winRate": 67.2,
+    "sharpe": 2.42,
+    "signalsLast30d": 38,
+    "decayRisk": "LOW",
+    "promotedAt": "2026-08-15"
+  },
+  {
+    "id": "STRAT-02",
+    "name": "Liquidity Sweep & FVG Breakout",
+    "version": "v1.4.2",
+    "state": "ACTIVE",
+    "author": "ProStock Core",
+    "description": "Identifies stop hunts at key swing highs/lows followed by aggressive impulse fills into Fair Value Gaps.",
+    "timeframes": [
+      "1h",
+      "4h"
+    ],
+    "markets": [
+      "NSE",
+      "CRYPTO"
+    ],
+    "winRate": 71.2,
+    "sharpe": 2.45,
+    "signalsLast30d": 26,
+    "decayRisk": "LOW",
+    "promotedAt": "2026-09-01"
+  },
+  {
+    "id": "STRAT-03",
+    "name": "Volume Profile POC Reclaim",
+    "version": "v1.2.0",
+    "state": "SHADOW",
+    "author": "ProStock Core",
+    "description": "Shadow testing volume profile value area re-entry and acceptance. Forward paper validation phase.",
+    "timeframes": [
+      "4h",
+      "1D"
+    ],
+    "markets": [
+      "CRYPTO"
+    ],
+    "winRate": 66.8,
+    "sharpe": 2.1,
+    "signalsLast30d": 18,
+    "decayRisk": "MEDIUM",
+    "promotedAt": "2026-10-05"
+  },
+  {
+    "id": "STRAT-04",
+    "name": "Bollinger Squeeze Mean Reversion",
+    "version": "v1.0.5",
+    "state": "RETIRED",
+    "author": "ProStock Legacy",
+    "description": "Range-bound mean reversion strategy disabled due to macro high-momentum regime shifts.",
+    "timeframes": [
+      "15m"
+    ],
+    "markets": [
+      "NSE"
+    ],
+    "winRate": 54.1,
+    "sharpe": 1.15,
+    "signalsLast30d": 0,
+    "decayRisk": "HIGH",
+    "promotedAt": "2025-11-10"
+  }
+]

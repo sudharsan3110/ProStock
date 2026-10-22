@@ -1,0 +1,42 @@
+{
+  "status": "OPTIMAL",
+  "uptime": "99.98%",
+  "startedAt": "2026-10-15T00:00:00Z",
+  "providers": [
+    {
+      "name": "Dhan SuperFast API (NSE/BSE)",
+      "status": "CONNECTED",
+      "latencyMs": 38,
+      "droppedTicks": 0,
+      "lastTickAgeSec": 0.4
+    },
+    {
+      "name": "Polygon.io CTA SIP (US Markets)",
+      "status": "CONNECTED",
+      "latencyMs": 52,
+      "droppedTicks": 0,
+      "lastTickAgeSec": 1.2
+    },
+    {
+      "name": "Binance Futures WSS (Crypto)",
+      "status": "CONNECTED",
+      "latencyMs": 24,
+      "droppedTicks": 0,
+      "lastTickAgeSec": 0.1
+    }
+  ],
+  "pipeline": {
+    "candleAggregationDelayMs": 140,
+    "signalEvaluationTimeMs": 280,
+    "dbWriteLatencyMs": 6.2,
+    "signalRConflationHz": 4,
+    "activeSubscribers": 1,
+    "watchdogHeartbeat": "HEALTHY"
+  },
+  "infrastructure": {
+    "cpuLoad": "14%",
+    "ramUsage": "482 MB / 16 GB",
+    "storageUsed": "1.4 GB (TimescaleDB Chunks compressed 8.2x)",
+    "activeDatabase": "PostgreSQL 16 + TimescaleDB (Dual-compatible SQLite fallback ready)"
+  }
+}

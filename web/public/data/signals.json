@@ -1,0 +1,294 @@
+[
+  {
+    "id": "SIG-NSE-20261020-001",
+    "symbol": "RELIANCE",
+    "market": "NSE",
+    "direction": "LONG",
+    "timeframe": "15m",
+    "strategy": {
+      "name": "EMA Pullback & Volume Surge",
+      "version": "v2.1.0",
+      "author": "ProStock Core Quant"
+    },
+    "regime": "TRENDING_BULL",
+    "freshness": "LIVE",
+    "mode": "LIVE",
+    "status": "ACTIVE",
+    "plan": {
+      "entryMin": 2738.00,
+      "entryMax": 2744.00,
+      "currentPrice": 2742.80,
+      "stopLoss": 2718.00,
+      "target1": 2778.00,
+      "target2": 2805.00,
+      "target3": 2840.00,
+      "riskReward": 2.45,
+      "suggestedQty": 75,
+      "dollarRisk": 1860.00,
+      "heatImpactPercent": 1.2
+    },
+    "score": {
+      "total": 92,
+      "factorCoverage": 98,
+      "factors": [
+        { "name": "Trend Alignment", "score": 34, "max": 35, "weight": 0.35 },
+        { "name": "Momentum Confluence", "score": 24, "max": 25, "weight": 0.25 },
+        { "name": "Volume Dynamics", "score": 19, "max": 20, "weight": 0.20 },
+        { "name": "Macro Regime", "score": 8, "max": 10, "weight": 0.10 },
+        { "name": "Order Flow Delta", "score": 7, "max": 10, "weight": 0.10 }
+      ],
+      "gatesPassed": ["Spread Check (< 0.05%)", "Volume Filter (> 1.5x 20-SMA)", "Macro Regime != BEAR_PANIC", "Earnings Blackout Safe"]
+    },
+    "reasons": [
+      { "rule": "EMA 20 > EMA 50 > EMA 200", "value": "2731 > 2712 > 2640", "threshold": "Strict Bullish Stack", "passed": true, "note": "High momentum structural alignment across multiple frames." },
+      { "rule": "RSI (14) Pullback Test", "value": "46.2", "threshold": "40.0 - 50.0 Retest Zone", "passed": true, "note": "Clean retest of dynamic 20-period exponential moving average without break." },
+      { "rule": "Volume Multiplier", "value": "2.18x", "threshold": ">= 1.50x 20-SMA", "passed": true, "note": "Institutional accumulation footprint confirmed on 15m bar close." },
+      { "rule": "ADX Trend Strength", "value": "32.4", "threshold": ">= 25.0", "passed": true, "note": "Strong persistent directional trend." },
+      { "rule": "Fair Value Gap (FVG)", "value": "2734.50 - 2739.00", "threshold": "Tested & Held", "passed": true, "note": "Liquidity void absorbed with aggressive buying wick." }
+    ],
+    "invalidation": [
+      { "condition": "Bar Close below 2718.00 (Structural Swing Low)", "status": "SAFE", "current": "2742.80" },
+      { "condition": "Time Expiry after 16 bars without T1 hit", "status": "ACTIVE", "current": "Bar 3/16" },
+      { "condition": "India VIX intraday spike > 17.5", "status": "SAFE", "current": "13.82" }
+    ],
+    "context": {
+      "eventRisks": "No immediate earnings within 14 trading days.",
+      "dataQualityScore": "100% (Zero dropped ticks)",
+      "volumeSemantics": "Real-time NSE trade prints verified.",
+      "correlatedPositions": "Open: 1 (INFY Long - Sector Risk 0.45)"
+    },
+    "evidence": {
+      "historicalWinRate": 68.4,
+      "sampleSize": 142,
+      "confidenceInterval": "[60.2% - 76.1%]",
+      "profitFactor": 2.14,
+      "sharpeRatio": 2.28,
+      "averageHoldingTime": "4.2 Hours"
+    },
+    "aiExplanation": {
+      "summary": "High-conviction long continuation setup on RELIANCE following a healthy intraday mean-reversion into the 15m EMA 20 zone.",
+      "groundingFacts": [
+        "Nifty 50 Energy sector leading the day with +0.95% relative outperformance.",
+        "Volume on the bounce bar was 2.18x the 20-period average, indicating active sponsor absorption.",
+        "Risk-reward of 2.45 provides positive mathematical expectancy with Stop Loss positioned safely under the session VWAP."
+      ],
+      "generatedAt": "2026-10-20T11:45:00Z"
+    },
+    "timestamp": "2026-10-20T11:45:00Z"
+  },
+  {
+    "id": "SIG-NSE-20261020-002",
+    "symbol": "TATAMOTORS",
+    "market": "NSE",
+    "direction": "LONG",
+    "timeframe": "1h",
+    "strategy": {
+      "name": "Liquidity Sweep & FVG Breakout",
+      "version": "v1.4.2",
+      "author": "ProStock Core Quant"
+    },
+    "regime": "TRENDING_BULL",
+    "freshness": "LIVE",
+    "mode": "LIVE",
+    "status": "ACTIVE",
+    "plan": {
+      "entryMin": 928.00,
+      "entryMax": 934.00,
+      "currentPrice": 932.70,
+      "stopLoss": 914.00,
+      "target1": 955.00,
+      "target2": 978.00,
+      "target3": 1010.00,
+      "riskReward": 2.65,
+      "suggestedQty": 180,
+      "dollarRisk": 3360.00,
+      "heatImpactPercent": 1.5
+    },
+    "score": {
+      "total": 94,
+      "factorCoverage": 96,
+      "factors": [
+        { "name": "Trend Alignment", "score": 35, "max": 35, "weight": 0.35 },
+        { "name": "Momentum Confluence", "score": 25, "max": 25, "weight": 0.25 },
+        { "name": "Volume Dynamics", "score": 18, "max": 20, "weight": 0.20 },
+        { "name": "Macro Regime", "score": 9, "max": 10, "weight": 0.10 },
+        { "name": "Order Flow Delta", "score": 7, "max": 10, "weight": 0.10 }
+      ],
+      "gatesPassed": ["Spread Check", "Auto Sector Relative Strength", "VWAP Anchor Confluence"]
+    },
+    "reasons": [
+      { "rule": "Previous Day High Breakout", "value": "930.50 breached", "threshold": "> 929.80", "passed": true, "note": "Multi-day range expansion with expansion bar." },
+      { "rule": "Relative Volume (RVOL)", "value": "1.48x", "threshold": ">= 1.25x", "passed": true, "note": "Clean volume participation without exhaustion spike." },
+      { "rule": "MACD Histogram Expansion", "value": "+2.84", "threshold": "> 0.0 & Expanding", "passed": true, "note": "Strong positive momentum acceleration." }
+    ],
+    "invalidation": [
+      { "condition": "Break below 914.00 session anchor VWAP", "status": "SAFE", "current": "932.70" },
+      { "condition": "Auto sector index rolls below 0% day change", "status": "SAFE", "current": "+1.15%" }
+    ],
+    "context": {
+      "eventRisks": "Monthly auto sales figures pre-announced; positive delivery beat.",
+      "dataQualityScore": "100%",
+      "volumeSemantics": "NSE consolidated feed.",
+      "correlatedPositions": "None."
+    },
+    "evidence": {
+      "historicalWinRate": 71.2,
+      "sampleSize": 98,
+      "confidenceInterval": "[62.4% - 79.5%]",
+      "profitFactor": 2.38,
+      "sharpeRatio": 2.45,
+      "averageHoldingTime": "6.8 Hours"
+    },
+    "aiExplanation": {
+      "summary": "Tata Motors printing a clean breakout pattern above 930 consolidation. Sector tailwinds provide high probability for multi-hour extension.",
+      "groundingFacts": [
+        "Auto sector index is top performer today alongside IT.",
+        "Breakout level 930 held as new dynamic support upon retest."
+      ],
+      "generatedAt": "2026-10-20T10:30:00Z"
+    },
+    "timestamp": "2026-10-20T10:30:00Z"
+  },
+  {
+    "id": "SIG-US-20261019-003",
+    "symbol": "NVDA",
+    "market": "US",
+    "direction": "LONG",
+    "timeframe": "1D",
+    "strategy": {
+      "name": "Volatility Squeeze Breakout",
+      "version": "v3.0.1",
+      "author": "ProStock Core Quant"
+    },
+    "regime": "TRENDING_BULL",
+    "freshness": "CLOSED",
+    "mode": "LIVE",
+    "status": "TARGET_1_HIT",
+    "plan": {
+      "entryMin": 136.50,
+      "entryMax": 138.50,
+      "currentPrice": 141.25,
+      "stopLoss": 131.00,
+      "target1": 141.00,
+      "target2": 148.00,
+      "target3": 155.00,
+      "riskReward": 2.80,
+      "suggestedQty": 120,
+      "dollarRisk": 840.00,
+      "heatImpactPercent": 0.8
+    },
+    "score": {
+      "total": 96,
+      "factorCoverage": 100,
+      "factors": [
+        { "name": "Trend Alignment", "score": 35, "max": 35, "weight": 0.35 },
+        { "name": "Momentum Confluence", "score": 25, "max": 25, "weight": 0.25 },
+        { "name": "Volume Dynamics", "score": 20, "max": 20, "weight": 0.20 },
+        { "name": "Macro Regime", "score": 9, "max": 10, "weight": 0.10 },
+        { "name": "Order Flow Delta", "score": 7, "max": 10, "weight": 0.10 }
+      ],
+      "gatesPassed": ["Bollinger Bands Squeeze Fired", "All Time High Proximity", "Institutional Block Purchases"]
+    },
+    "reasons": [
+      { "rule": "TTM Squeeze Momentum Fire", "value": "Cyan Dots to Blue Bars", "threshold": "Zero Line Cross", "passed": true, "note": "12-day consolidation release into upside." },
+      { "rule": "Volume > 1.35x 50-DMA", "value": "1.36x", "threshold": ">= 1.20x", "passed": true, "note": "Aggressive institutional accumulation." }
+    ],
+    "invalidation": [
+      { "condition": "Close below $131.00 20-DMA", "status": "SAFE", "current": "$141.25" }
+    ],
+    "context": {
+      "eventRisks": "GTC Developer conference keynote in 3 weeks.",
+      "dataQualityScore": "100%",
+      "volumeSemantics": "Nasdaq official CTA SIP.",
+      "correlatedPositions": "Open: AAPL (Beta 1.1)"
+    },
+    "evidence": {
+      "historicalWinRate": 74.5,
+      "sampleSize": 210,
+      "confidenceInterval": "[68.2% - 80.4%]",
+      "profitFactor": 2.85,
+      "sharpeRatio": 2.65,
+      "averageHoldingTime": "3.5 Days"
+    },
+    "aiExplanation": {
+      "summary": "Target 1 achieved at $141.00. Trailing stop automatically stepped up to breakeven ($137.50). Next objective $148.00.",
+      "groundingFacts": [
+        "Semiconductor index (SOXX) reaching new cyclical peaks.",
+        "Target 1 hit within 2 trading sessions."
+      ],
+      "generatedAt": "2026-10-19T14:00:00Z"
+    },
+    "timestamp": "2026-10-19T14:00:00Z"
+  },
+  {
+    "id": "SIG-CRYPTO-20261020-004",
+    "symbol": "BTCUSDT",
+    "market": "CRYPTO",
+    "direction": "LONG",
+    "timeframe": "4h",
+    "strategy": {
+      "name": "Volume Profile Point of Control Reclaim",
+      "version": "v1.2.0",
+      "author": "ProStock Core Quant"
+    },
+    "regime": "TRENDING_BULL",
+    "freshness": "LIVE",
+    "mode": "SHADOW",
+    "status": "ACTIVE",
+    "plan": {
+      "entryMin": 67200.00,
+      "entryMax": 67600.00,
+      "currentPrice": 68420.50,
+      "stopLoss": 65800.00,
+      "target1": 70200.00,
+      "target2": 72500.00,
+      "target3": 75000.00,
+      "riskReward": 2.50,
+      "suggestedQty": 0.25,
+      "dollarRisk": 400.00,
+      "heatImpactPercent": 0.5
+    },
+    "score": {
+      "total": 91,
+      "factorCoverage": 95,
+      "factors": [
+        { "name": "Trend Alignment", "score": 33, "max": 35, "weight": 0.35 },
+        { "name": "Momentum Confluence", "score": 24, "max": 25, "weight": 0.25 },
+        { "name": "Volume Dynamics", "score": 18, "max": 20, "weight": 0.20 },
+        { "name": "Macro Regime", "score": 8, "max": 10, "weight": 0.10 },
+        { "name": "Order Flow Delta", "score": 8, "max": 10, "weight": 0.10 }
+      ],
+      "gatesPassed": ["Funding Rate Normal (< 0.015%)", "Open Interest Stable", "Spot Delta Positive"]
+    },
+    "reasons": [
+      { "rule": "Reclaim of Value Area High (VAH)", "value": "$67,400 reclaimed", "threshold": "> $67,200", "passed": true, "note": "Clean acceptance back into value with strong bidding." },
+      { "rule": "CVD Divergence", "value": "Bullish Spot Lead", "threshold": "Spot CVD > Perp CVD", "passed": true, "note": "Organic spot buying rather than overleveraged perp chasing." }
+    ],
+    "invalidation": [
+      { "condition": "Loss of $65,800 weekly open level", "status": "SAFE", "current": "$68,420" }
+    ],
+    "context": {
+      "eventRisks": "US CPI release on Thursday.",
+      "dataQualityScore": "100%",
+      "volumeSemantics": "Binance USDT Perp WebSocket.",
+      "correlatedPositions": "Open: SOLUSDT Long"
+    },
+    "evidence": {
+      "historicalWinRate": 66.8,
+      "sampleSize": 185,
+      "confidenceInterval": "[59.8% - 73.4%]",
+      "profitFactor": 2.10,
+      "sharpeRatio": 2.15,
+      "averageHoldingTime": "18.5 Hours"
+    },
+    "aiExplanation": {
+      "summary": "Shadow mode evaluation signal. BTC displaying classic Wyckoff re-accumulation above $67k with positive spot delta lead.",
+      "groundingFacts": [
+        "Funding rate is neutral (+0.008%), indicating absence of retail over-leverage.",
+        "Weekly candle structure remains firmly bullish."
+      ],
+      "generatedAt": "2026-10-20T08:15:00Z"
+    },
+    "timestamp": "2026-10-20T08:15:00Z"
+  }
+]

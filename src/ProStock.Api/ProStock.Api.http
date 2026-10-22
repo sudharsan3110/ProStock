@@ -1,0 +1,6 @@
+@ProStock.Api_HostAddress = http://localhost:5064
+
+GET {{ProStock.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

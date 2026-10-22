@@ -1,0 +1,99 @@
+{
+  "account": {
+    "accountNumber": "PAPER-PRO-9842",
+    "currency": "INR",
+    "totalEquity": 542850,
+    "cashBalance": 384120,
+    "marginUsed": 158730,
+    "marginAvailable": 384120,
+    "dailyPnL": 14250,
+    "dailyPnLPercent": 2.7,
+    "unrealizedPnL": 8940,
+    "realizedPnL": 5310,
+    "portfolioHeatPercent": 28.5,
+    "maxAllowedHeatPercent": 40,
+    "circuitBreakerTripped": false
+  },
+  "positions": [
+    {
+      "id": "POS-01",
+      "symbol": "RELIANCE",
+      "direction": "LONG",
+      "quantity": 75,
+      "avgEntryPrice": 2718.5,
+      "currentPrice": 2742.8,
+      "marketValue": 205710,
+      "pnl": 1822.5,
+      "pnlPercent": 0.89,
+      "stopLoss": 2718,
+      "targetPrice": 2778,
+      "rMultiple": 1.25,
+      "entryTime": "2026-10-20T09:45:00Z"
+    },
+    {
+      "id": "POS-02",
+      "symbol": "TATAMOTORS",
+      "direction": "LONG",
+      "quantity": 150,
+      "avgEntryPrice": 916.2,
+      "currentPrice": 932.7,
+      "marketValue": 139905,
+      "pnl": 2475,
+      "pnlPercent": 1.8,
+      "stopLoss": 914,
+      "targetPrice": 955,
+      "rMultiple": 1.84,
+      "entryTime": "2026-10-20T10:15:00Z"
+    },
+    {
+      "id": "POS-03",
+      "symbol": "TCS",
+      "direction": "LONG",
+      "quantity": 25,
+      "avgEntryPrice": 4120,
+      "currentPrice": 4185.5,
+      "marketValue": 104637.5,
+      "pnl": 1637.5,
+      "pnlPercent": 1.59,
+      "stopLoss": 4080,
+      "targetPrice": 4250,
+      "rMultiple": 1.63,
+      "entryTime": "2026-10-19T14:30:00Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-9021",
+      "symbol": "RELIANCE",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": 75,
+      "price": 2718.5,
+      "status": "FILLED",
+      "filledQuantity": 75,
+      "timestamp": "2026-10-20T09:45:02Z"
+    },
+    {
+      "id": "ORD-9022",
+      "symbol": "TATAMOTORS",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": 150,
+      "price": 916.2,
+      "status": "FILLED",
+      "filledQuantity": 150,
+      "timestamp": "2026-10-20T10:15:10Z"
+    },
+    {
+      "id": "ORD-9023",
+      "symbol": "INFY",
+      "side": "BUY",
+      "type": "LIMIT",
+      "quantity": 50,
+      "price": 1910,
+      "status": "OPEN",
+      "filledQuantity": 0,
+      "timestamp": "2026-10-20T11:20:00Z"
+    }
+  ]
+}

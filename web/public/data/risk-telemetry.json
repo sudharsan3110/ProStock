@@ -1,0 +1,69 @@
+{
+  "currentHeat": 28.5,
+  "maxHeatLimit": 40,
+  "dailyLossUsed": 0,
+  "dailyLossLimit": 2.5,
+  "openRiskValue": 7695,
+  "maxCapitalAtRisk": 21714,
+  "guardrails": [
+    {
+      "name": "Max Single Trade Risk",
+      "status": "PASS",
+      "current": "0.85%",
+      "limit": "1.00%"
+    },
+    {
+      "name": "Max Sector Exposure (IT)",
+      "status": "PASS",
+      "current": "19.2%",
+      "limit": "30.0%"
+    },
+    {
+      "name": "Max Sector Exposure (Energy)",
+      "status": "PASS",
+      "current": "22.5%",
+      "limit": "30.0%"
+    },
+    {
+      "name": "Max Correlated Positions",
+      "status": "PASS",
+      "current": "2 pairs",
+      "limit": "3 pairs"
+    },
+    {
+      "name": "Daily Drawdown Breaker",
+      "status": "PASS",
+      "current": "0.0%",
+      "limit": "-3.0%"
+    },
+    {
+      "name": "Kill Switch State",
+      "status": "ARMED_OK",
+      "current": "NORMAL",
+      "limit": "ENGAGED"
+    }
+  ],
+  "sectorExposure": [
+    {
+      "sector": "Energy",
+      "percent": 38
+    },
+    {
+      "sector": "Automotive",
+      "percent": 26
+    },
+    {
+      "sector": "IT",
+      "percent": 19
+    },
+    {
+      "sector": "Cash / Reserve",
+      "percent": 17
+    }
+  ],
+  "stressTest": {
+    "niftyMinus3": "-2.8% Portfolio Impact (-Rs 15,200)",
+    "niftyMinus5": "-4.9% Portfolio Impact (-Rs 26,600) [All Stop Losses Trigger]",
+    "vixSpikeTo25": "Hedging Auto-Engage recommended"
+  }
+}

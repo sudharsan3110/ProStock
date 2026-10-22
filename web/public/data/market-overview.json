@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-10-20T12:00:00Z",
+  "indices": [
+    { "symbol": "NIFTY 50", "name": "Nifty 50 Index", "price": 25184.20, "change": 142.60, "changePercent": 0.57, "market": "NSE", "high": 25220.80, "low": 25050.10, "volume": 328000000 },
+    { "symbol": "BANKNIFTY", "name": "Nifty Bank", "price": 52140.75, "change": 380.40, "changePercent": 0.74, "market": "NSE", "high": 52300.00, "low": 51820.30, "volume": 184000000 },
+    { "symbol": "SENSEX", "name": "BSE Sensex", "price": 82450.10, "change": 490.15, "changePercent": 0.60, "market": "BSE", "high": 82600.00, "low": 82010.50, "volume": 95000000 },
+    { "symbol": "INDIA VIX", "name": "India Volatility Index", "price": 13.82, "change": -0.34, "changePercent": -2.40, "market": "NSE", "high": 14.50, "low": 13.70, "volume": 0 },
+    { "symbol": "SPX", "name": "S&P 500 Index", "price": 5864.67, "change": 22.40, "changePercent": 0.38, "market": "US", "high": 5875.20, "low": 5840.10, "volume": 2100000000 },
+    { "symbol": "BTCUSDT", "name": "Bitcoin / Tether", "price": 68420.50, "change": 1250.30, "changePercent": 1.86, "market": "CRYPTO", "high": 68950.00, "low": 66800.00, "volume": 4250000000 }
+  ],
+  "marketBreadth": {
+    "advances": 1420,
+    "declines": 860,
+    "unchanged": 120,
+    "ratio": 1.65,
+    "newHighs": 84,
+    "newLows": 12
+  },
+  "marketSessions": [
+    { "market": "NSE", "status": "OPEN", "timeRemaining": "3h 15m", "timezone": "IST", "nextSession": "Close at 15:30 IST" },
+    { "market": "US", "status": "CLOSED", "timeRemaining": "7h 00m", "timezone": "EST", "nextSession": "Pre-market 04:00 EST" },
+    { "market": "CRYPTO", "status": "OPEN", "timeRemaining": "24/7", "timezone": "UTC", "nextSession": "Always open" }
+  ],
+  "sectors": [
+    { "name": "NIFTY IT", "changePercent": 1.84, "marketCap": "Large", "advances": 8, "declines": 2, "heat": 0.8 },
+    { "name": "NIFTY AUTO", "changePercent": 1.15, "marketCap": "Large", "advances": 11, "declines": 4, "heat": 0.6 },
+    { "name": "NIFTY BANK", "changePercent": 0.74, "marketCap": "Large", "advances": 9, "declines": 3, "heat": 0.4 },
+    { "name": "NIFTY PHARMA", "changePercent": 0.32, "marketCap": "Mid", "advances": 12, "declines": 8, "heat": 0.2 },
+    { "name": "NIFTY FMCG", "changePercent": -0.45, "marketCap": "Large", "advances": 4, "declines": 11, "heat": -0.3 },
+    { "name": "NIFTY METAL", "changePercent": -0.88, "marketCap": "Mid", "advances": 3, "declines": 12, "heat": -0.5 },
+    { "name": "NIFTY ENERGY", "changePercent": 0.95, "marketCap": "Large", "advances": 7, "declines": 3, "heat": 0.5 }
+  ],
+  "regimeStatus": {
+    "current": "TRENDING_BULLISH",
+    "strength": 78,
+    "hysteresisConfirmed": true,
+    "adx": 31.4,
+    "volatilityState": "NORMAL_COMPRESSION"
+  }
+}

@@ -1,0 +1,55 @@
+[
+  {
+    "id": "NEWS-01",
+    "headline": "Reliance Retail and Jio Platforms drive Q2 revenue beat; telecom ARPU surges 7.2%",
+    "source": "Bloomberg / Mint",
+    "timestamp": "2026-10-20T11:15:00Z",
+    "sentiment": "BULLISH",
+    "score": 0.88,
+    "symbols": [
+      "RELIANCE"
+    ],
+    "aiSummary": "Strong consumer retail footfall and 5G subscriber additions solidify earnings momentum."
+  },
+  {
+    "id": "NEWS-02",
+    "headline": "Auto sector prints highest festival dispatches in 4 years led by commercial vehicles",
+    "source": "Economic Times",
+    "timestamp": "2026-10-20T10:45:00Z",
+    "sentiment": "BULLISH",
+    "score": 0.92,
+    "symbols": [
+      "TATAMOTORS",
+      "MARUTI"
+    ],
+    "aiSummary": "Channel checks indicate sustained order bookings and favorable raw material input costs."
+  },
+  {
+    "id": "NEWS-03",
+    "headline": "US Tech Giants accelerate Capex on next-gen AI clusters; custom silicon demand robust",
+    "source": "Reuters",
+    "timestamp": "2026-10-20T08:30:00Z",
+    "sentiment": "BULLISH",
+    "score": 0.85,
+    "symbols": [
+      "NVDA",
+      "TCS",
+      "INFY"
+    ],
+    "aiSummary": "Global enterprise cloud transition maintains steady pipeline of multi-year outsourcing contracts."
+  },
+  {
+    "id": "NEWS-04",
+    "headline": "RBI holds repo rate at 6.5%, maintains cautious stance on food inflation while noting resilient GDP",
+    "source": "RBI Bulletin",
+    "timestamp": "2026-10-19T14:00:00Z",
+    "sentiment": "NEUTRAL",
+    "score": 0.5,
+    "symbols": [
+      "BANKNIFTY",
+      "HDFCBANK",
+      "SBIN"
+    ],
+    "aiSummary": "Macro stability intact. Banking net interest margins stabilized around cyclical norms."
+  }
+]

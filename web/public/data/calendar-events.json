@@ -1,0 +1,42 @@
+[
+  {
+    "id": "CAL-01",
+    "event": "RBI Monetary Policy Committee Outcome",
+    "date": "2026-10-22",
+    "impact": "HIGH",
+    "market": "NSE",
+    "blackout": false
+  },
+  {
+    "id": "CAL-02",
+    "event": "Nifty 50 Weekly Futures & Options Expiry",
+    "date": "2026-10-23",
+    "impact": "HIGH",
+    "market": "NSE",
+    "blackout": false
+  },
+  {
+    "id": "CAL-03",
+    "event": "US Federal Reserve FOMC Rate Decision",
+    "date": "2026-10-29",
+    "impact": "CRITICAL",
+    "market": "US",
+    "blackout": true
+  },
+  {
+    "id": "CAL-04",
+    "event": "Tata Motors Q2 Earnings Call",
+    "date": "2026-11-04",
+    "impact": "HIGH",
+    "market": "NSE",
+    "blackout": true
+  },
+  {
+    "id": "CAL-05",
+    "event": "US Non-Farm Payrolls (NFP)",
+    "date": "2026-11-06",
+    "impact": "CRITICAL",
+    "market": "GLOBAL",
+    "blackout": false
+  }
+]

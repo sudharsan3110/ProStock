@@ -1,0 +1,125 @@
+# ==============================================================================
+# ProStock Institutional Trading Platform - Git Ignore Configuration
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. CRITICAL SECURITY: Secrets & Environment Files
+# ------------------------------------------------------------------------------
+# Never commit active secrets, API keys, or private environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.cer
+*.crt
+
+# ------------------------------------------------------------------------------
+# 2. .NET / C# Build Outputs & Intermediate Files
+# ------------------------------------------------------------------------------
+**/[Bb]in/
+**/[Oo]bj/
+**/[Dd]ebug/
+**/[Rr]elease/
+[Tt]est[Rr]esults/
+[Bb]uild[Ll]og.*
+*_i.c
+*_p.c
+*_i.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.slnx.sqlite
+
+# Visual Studio / Rider / VS Code cache directories
+.vs/
+.vscode/
+.idea/
+*.DotSettings.user
+
+# ------------------------------------------------------------------------------
+# 3. Node.js & Frontend (Vite / React / TypeScript)
+# ------------------------------------------------------------------------------
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+.npm/
+.yarn/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# ------------------------------------------------------------------------------
+# 4. Database & Persistence Files
+# ------------------------------------------------------------------------------
+# Local SQLite database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+prostock_local.db*
+
+# ------------------------------------------------------------------------------
+# 5. Operating System & Cache Files
+# ------------------------------------------------------------------------------
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ------------------------------------------------------------------------------
+# 6. IDE & Agent Workspaces
+# ------------------------------------------------------------------------------
+.system_generated/
+.gemini/
+scratch/
