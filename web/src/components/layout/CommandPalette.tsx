@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useUI, PageId } from '../../context/UIContext';
 import { useMarket } from '../../context/MarketContext';
+import { currencyOf, formatMoney } from '../../utils/currency';
 import { Search, Radio, LineChart, FlaskConical, Terminal, Activity, ShieldCheck, X } from 'lucide-react';
 
 export const CommandPalette: React.FC = () => {
@@ -71,7 +72,7 @@ export const CommandPalette: React.FC = () => {
                     <span className="text-xs text-fg-3">{t.name}</span>
                   </div>
                   <div className="text-xs font-mono font-semibold text-fg-0">
-                    ₹{t.price.toFixed(2)}
+                    {formatMoney(t.price, currencyOf(t))}
                   </div>
                 </button>
               ))}

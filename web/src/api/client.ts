@@ -8,8 +8,16 @@
 export const USE_MOCK_DATA = false;
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
-export async function apiFetch<T>(endpoint: string, mockFallbackFile: string): Promise<T> {
+/**
+ * @param mockFallbackFile Static JSON in public/data served when the backend is unreachable.
+ *   Pass null for live-only data (feed health, streaming quotes) where a canned response
+ *   would misrepresent the system as healthy.
+ */
+export async function apiFetch<T>(endpoint: string, mockFallbackFile: string | null): Promise<T> {
   if (USE_MOCK_DATA) {
+    if (mockFallbackFile === null) {
+      throw new Error(`No mock data for live-only endpoint: ${endpoint}`);
+    }
     // Read directly from public/data JSON files in mock mode
     const res = await fetch(`/data/${mockFallbackFile}`);
     if (!res.ok) {
@@ -38,6 +46,7 @@ export async function apiFetch<T>(endpoint: string, mockFallbackFile: string): P
 
     return await res.json() as T;
   } catch (err) {
+    if (mockFallbackFile === null) throw err;
     console.warn(`[ProStock API] Live endpoint ${endpoint} unavailable, falling back to mock file:`, err);
     // Graceful fallback to static JSON if server is restarting or endpoint is in transition
     const fallbackRes = await fetch(`/data/${mockFallbackFile}`);

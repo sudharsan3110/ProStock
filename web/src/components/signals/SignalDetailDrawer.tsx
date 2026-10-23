@@ -5,6 +5,7 @@ import { ScoreBadge } from '../common/ScoreBadge';
 import { FreshnessChip } from '../common/FreshnessChip';
 import { PriceCell } from '../common/PriceCell';
 import { useUI } from '../../context/UIContext';
+import { currencyOf } from '../../utils/currency';
 import {
   X,
   Play,
@@ -38,6 +39,7 @@ export const SignalDetailDrawer: React.FC<SignalDetailDrawerProps> = ({
   if (!isOpen || !signal) return null;
 
   const isLong = signal.direction === 'LONG';
+  const cur = currencyOf(signal);
 
   const handlePaperTrade = () => {
     openOrderTicket({
@@ -106,35 +108,35 @@ export const SignalDetailDrawer: React.FC<SignalDetailDrawerProps> = ({
             <div className="p-2.5 rounded bg-bg-2 border border-border">
               <div className="text-[11px] text-fg-3 uppercase">Entry Zone</div>
               <div className="font-mono font-semibold text-fg-0 text-sm mt-0.5">
-                ₹{signal.plan.entryMin} - ₹{signal.plan.entryMax}
+                {cur}{signal.plan.entryMin} - {cur}{signal.plan.entryMax}
               </div>
             </div>
 
             <div className="p-2.5 rounded bg-rose-500/10 border border-rose-500/20">
               <div className="text-[11px] text-rose-300 uppercase">Stop Loss</div>
               <div className="font-mono font-bold text-rose-400 text-sm mt-0.5">
-                ₹{signal.plan.stopLoss.toFixed(2)}
+                {cur}{signal.plan.stopLoss.toFixed(2)}
               </div>
             </div>
 
             <div className="p-2.5 rounded bg-emerald-500/10 border border-emerald-500/20">
               <div className="text-[11px] text-emerald-300 uppercase">Target 1 (1.5R)</div>
               <div className="font-mono font-bold text-emerald-400 text-sm mt-0.5">
-                ₹{signal.plan.target1.toFixed(2)}
+                {cur}{signal.plan.target1.toFixed(2)}
               </div>
             </div>
 
             <div className="p-2.5 rounded bg-emerald-500/10 border border-emerald-500/20">
               <div className="text-[11px] text-emerald-300 uppercase">Target 2 (2.5R)</div>
               <div className="font-mono font-bold text-emerald-400 text-sm mt-0.5">
-                ₹{signal.plan.target2.toFixed(2)}
+                {cur}{signal.plan.target2.toFixed(2)}
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-between text-xs font-mono text-fg-2 pt-2 border-t border-border">
             <span>Suggested Size: <strong className="text-fg-0">{signal.plan.suggestedQty} Units</strong></span>
-            <span>Est. Dollar Risk: <strong className="text-rose-400">₹{signal.plan.dollarRisk}</strong></span>
+            <span>Est. Dollar Risk: <strong className="text-rose-400">{cur}{signal.plan.dollarRisk}</strong></span>
             <span>Heat Impact: <strong className="text-amber-400">+{signal.plan.heatImpactPercent}%</strong></span>
           </div>
         </section>

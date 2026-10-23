@@ -3,8 +3,10 @@ import { useMarket } from '../context/MarketContext';
 import { useTrading } from '../context/TradingContext';
 import { useUI } from '../context/UIContext';
 import { signalApi } from '../api/signalApi';
-import { marketApi } from '../api/marketApi';
-import { Signal, Candle } from '../types';
+import { signalRManager } from '../api/signalr';
+import { useLiveCandles } from '../hooks/useLiveCandles';
+import { currencyOf } from '../utils/currency';
+import { Signal } from '../types';
 import { InteractiveChart } from '../components/charts/InteractiveChart';
 import { PriceCell } from '../components/common/PriceCell';
 import { Delta } from '../components/common/Delta';
@@ -30,15 +32,16 @@ export const CockpitDashboard: React.FC = () => {
   const { setSelectedSignal, setIsSignalDrawerOpen, setCurrentPage } = useUI();
 
   const [signals, setSignals] = useState<Signal[]>([]);
-  const [candles, setCandles] = useState<Candle[]>([]);
+  const [timeframe, setTimeframe] = useState('15m');
+  const candles = useLiveCandles(activeSymbol, timeframe, activeTicker?.market === 'CRYPTO');
+  const cur = currencyOf(activeTicker);
 
   useEffect(() => {
     signalApi.getSignals().then(setSignals).catch(console.error);
+    return signalRManager.subscribeSignals(sig =>
+      setSignals(prev => (prev.some(s => s.id === sig.id) ? prev : [sig, ...prev]))
+    );
   }, []);
-
-  useEffect(() => {
-    marketApi.getCandles(activeSymbol).then(setCandles).catch(console.error);
-  }, [activeSymbol]);
 
   const activeSignal = React.useMemo(() => {
     return signals.find(s => s.symbol === activeSymbol) || null;
@@ -68,7 +71,7 @@ export const CockpitDashboard: React.FC = () => {
               <span className="text-[10px] font-mono text-fg-3">{idx.market}</span>
             </div>
             <div className="my-1">
-              <PriceCell price={idx.price} className="text-base" />
+              <PriceCell price={idx.price} currency={currencyOf(idx)} className="text-base" />
             </div>
             <div className="text-xs">
               <Delta value={idx.change} percent={idx.changePercent} />
@@ -85,6 +88,9 @@ export const CockpitDashboard: React.FC = () => {
             symbol={activeSymbol}
             candles={candles}
             signal={activeSignal}
+            timeframe={timeframe}
+            onTimeframeChange={setTimeframe}
+            freshness={activeTicker?.freshness}
             height={460}
           />
 
@@ -109,7 +115,7 @@ export const CockpitDashboard: React.FC = () => {
             <div>
               <span className="text-fg-3 block text-[10px]">ATR (14)</span>
               <span className="text-fg-0 font-semibold mt-1 block">
-                ₹{activeTicker?.atr.toFixed(2)}
+                {cur}{activeTicker?.atr.toFixed(2)}
               </span>
             </div>
           </div>
@@ -242,6 +248,7 @@ export const CockpitDashboard: React.FC = () => {
             <tbody className="divide-y divide-border font-mono">
               {signals.map(sig => {
                 const isLong = sig.direction === 'LONG';
+                const sc = currencyOf(sig);
                 return (
                   <tr
                     key={sig.id}
@@ -264,9 +271,9 @@ export const CockpitDashboard: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-fg-2">{sig.timeframe}</td>
                     <td className="py-3 px-4 text-fg-1">{sig.strategy.name}</td>
-                    <td className="py-3 px-4 text-fg-0">₹{sig.plan.entryMin} - ₹{sig.plan.entryMax}</td>
-                    <td className="py-3 px-4 text-rose-400 font-semibold">₹{sig.plan.stopLoss.toFixed(2)}</td>
-                    <td className="py-3 px-4 text-emerald-400 font-semibold">₹{sig.plan.target1.toFixed(2)}</td>
+                    <td className="py-3 px-4 text-fg-0">{sc}{sig.plan.entryMin} - {sc}{sig.plan.entryMax}</td>
+                    <td className="py-3 px-4 text-rose-400 font-semibold">{sc}{sig.plan.stopLoss.toFixed(2)}</td>
+                    <td className="py-3 px-4 text-emerald-400 font-semibold">{sc}{sig.plan.target1.toFixed(2)}</td>
                     <td className="py-3 px-4 text-fg-0 font-bold">{sig.plan.riskReward}:1</td>
                     <td className="py-3 px-4">
                       <ScoreBadge score={sig.score.total} size="sm" />

@@ -5,12 +5,25 @@ import { Activity, Database, Cpu, Wifi, Server, CheckCircle2 } from 'lucide-reac
 
 export const SystemHealthPage: React.FC = () => {
   const [health, setHealth] = useState<SystemHealth | null>(null);
+  const [unreachable, setUnreachable] = useState(false);
 
   useEffect(() => {
-    analyticsApi.getSystemHealth().then(setHealth).catch(console.error);
+    const load = () =>
+      analyticsApi.getSystemHealth()
+        .then(h => { setHealth(h); setUnreachable(false); })
+        .catch(() => setUnreachable(true));
+    load();
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  if (!health) return null;
+  if (!health) {
+    return unreachable ? (
+      <div className="p-6 text-xs font-mono text-rose-400">
+        Backend unreachable — no live telemetry. Start the API and this page will reconnect automatically.
+      </div>
+    ) : null;
+  }
 
   return (
     <div className="p-4 space-y-4 max-w-[1920px] mx-auto select-none">
@@ -62,7 +75,9 @@ export const SystemHealthPage: React.FC = () => {
       <div className="pro-card overflow-hidden">
         <div className="pro-card-header">
           <h3 className="font-bold text-sm text-fg-0">Market Data Providers</h3>
-          <span className="text-xs font-mono text-emerald-400">All 3 Feeds Streaming</span>
+          <span className="text-xs font-mono text-fg-3">
+            {health.providers.filter(p => p.status === 'CONNECTED').length} of {health.providers.length} feeds streaming
+          </span>
         </div>
 
         <table className="w-full text-left text-xs font-mono">
@@ -76,20 +91,31 @@ export const SystemHealthPage: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {health.providers.map(p => (
-              <tr key={p.name} className="hover:bg-bg-hover/50">
-                <td className="py-3 px-4 font-bold text-fg-0">{p.name}</td>
-                <td className="py-3 px-4">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30 text-[11px]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-led" />
-                    {p.status}
-                  </span>
-                </td>
-                <td className="py-3 px-4 text-fg-0 font-semibold">{p.latencyMs} ms</td>
-                <td className="py-3 px-4 text-fg-2">{p.lastTickAgeSec}s ago</td>
-                <td className="py-3 px-4 text-emerald-400 font-bold">{p.droppedTicks}</td>
-              </tr>
-            ))}
+            {health.providers.map(p => {
+              const tone = p.status === 'CONNECTED'
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                : p.status === 'RECONNECTING'
+                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                : 'bg-gray-700/30 text-gray-400 border-gray-600/30';
+              const live = p.status === 'CONNECTED';
+              return (
+                <tr key={p.name} className="hover:bg-bg-hover/50" title={p.lastError ?? undefined}>
+                  <td className="py-3 px-4 font-bold text-fg-0">
+                    {p.name}
+                    {p.lastError && <div className="text-[10px] font-normal text-fg-3 mt-0.5">{p.lastError}</div>}
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-bold border text-[11px] ${tone}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full bg-current ${live ? 'pulse-led' : ''}`} />
+                      {p.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-fg-0 font-semibold">{live ? `${p.latencyMs} ms` : '—'}</td>
+                  <td className="py-3 px-4 text-fg-2">{p.lastTickAgeSec >= 0 ? `${p.lastTickAgeSec}s ago` : '—'}</td>
+                  <td className="py-3 px-4 text-fg-2 font-bold">{live ? p.droppedTicks : '—'}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

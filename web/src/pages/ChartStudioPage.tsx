@@ -1,18 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMarket } from '../context/MarketContext';
-import { marketApi } from '../api/marketApi';
-import { Candle } from '../types';
+import { useLiveCandles } from '../hooks/useLiveCandles';
 import { InteractiveChart } from '../components/charts/InteractiveChart';
 import { LineChart, LayoutGrid, Square, Columns } from 'lucide-react';
 
+/** One chart pane with its own data subscription and timeframe. */
+const StudioChart: React.FC<{ symbol: string; height: number }> = ({ symbol, height }) => {
+  const { tickers } = useMarket();
+  const ticker = tickers.find(t => t.symbol === symbol);
+  const [timeframe, setTimeframe] = useState('15m');
+  const candles = useLiveCandles(symbol, timeframe, ticker?.market === 'CRYPTO');
+
+  return (
+    <InteractiveChart
+      symbol={symbol}
+      candles={candles}
+      timeframe={timeframe}
+      onTimeframeChange={setTimeframe}
+      freshness={ticker?.freshness}
+      height={height}
+    />
+  );
+};
+
 export const ChartStudioPage: React.FC = () => {
-  const { activeSymbol, tickers, setActiveSymbol } = useMarket();
-  const [candles, setCandles] = useState<Candle[]>([]);
+  const { activeSymbol } = useMarket();
   const [layout, setLayout] = useState<'1x1' | '1x2' | '2x2'>('1x1');
 
-  useEffect(() => {
-    marketApi.getCandles(activeSymbol).then(setCandles).catch(console.error);
-  }, [activeSymbol]);
+  // Companion panes: benchmark plus the two largest crypto pairs, skipping the active symbol.
+  const companions = ['NIFTY 50', 'BTCUSDT', 'ETHUSDT', 'SOLUSDT'].filter(s => s !== activeSymbol);
 
   return (
     <div className="p-4 space-y-4 max-w-[1920px] mx-auto select-none">
@@ -55,14 +71,12 @@ export const ChartStudioPage: React.FC = () => {
       <div className={`grid gap-4 ${
         layout === '1x1' ? 'grid-cols-1' : layout === '1x2' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'
       }`}>
-        <InteractiveChart symbol={activeSymbol} candles={candles} height={layout === '1x1' ? 620 : 420} />
-        {layout !== '1x1' && (
-          <InteractiveChart symbol="NIFTY 50" candles={candles} height={420} />
-        )}
+        <StudioChart symbol={activeSymbol} height={layout === '1x1' ? 620 : 420} />
+        {layout !== '1x1' && <StudioChart symbol={companions[0]} height={420} />}
         {layout === '2x2' && (
           <>
-            <InteractiveChart symbol="NVDA" candles={candles} height={420} />
-            <InteractiveChart symbol="BTCUSDT" candles={candles} height={420} />
+            <StudioChart symbol={companions[1]} height={420} />
+            <StudioChart symbol={companions[2]} height={420} />
           </>
         )}
       </div>

@@ -6,6 +6,14 @@ import { Delta } from '../components/common/Delta';
 import { RegimeBadge } from '../components/common/RegimeBadge';
 import { FreshnessChip } from '../components/common/FreshnessChip';
 import { ListFilter, Search, Play, ArrowUpDown } from 'lucide-react';
+import { currencyOf, formatMoney } from '../utils/currency';
+import { Ticker } from '../types';
+
+const FOLDERS = {
+  'NIFTY 50': (t: Ticker) => t.market === 'NSE',
+  'TECH LEADERS': (t: Ticker) => /tech|^it$|information technology/i.test(t.sector),
+  'CRYPTO HOT': (t: Ticker) => t.market === 'CRYPTO'
+} as const;
 
 export const WatchlistsPage: React.FC = () => {
   const { tickers, setActiveSymbol } = useMarket();
@@ -13,10 +21,14 @@ export const WatchlistsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedFolder, setSelectedFolder] = useState<'NIFTY 50' | 'TECH LEADERS' | 'CRYPTO HOT'>('NIFTY 50');
 
-  const filtered = tickers.filter(t =>
-    t.symbol.toLowerCase().includes(search.toLowerCase()) ||
-    t.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = tickers
+    .filter(FOLDERS[selectedFolder])
+    .filter(t =>
+      t.symbol.toLowerCase().includes(search.toLowerCase()) ||
+      t.name.toLowerCase().includes(search.toLowerCase())
+    )
+    // Hottest first in the crypto folder: largest absolute 24h move.
+    .sort((a, b) => selectedFolder === 'CRYPTO HOT' ? Math.abs(b.changePercent) - Math.abs(a.changePercent) : 0);
 
   return (
     <div className="p-4 space-y-4 max-w-[1920px] mx-auto select-none">
@@ -93,13 +105,13 @@ export const WatchlistsPage: React.FC = () => {
                   </td>
                   <td className="py-3 px-4 text-fg-3">{t.sector}</td>
                   <td className="py-3 px-4 font-semibold">
-                    <PriceCell price={t.price} />
+                    <PriceCell price={t.price} currency={currencyOf(t)} />
                   </td>
                   <td className="py-3 px-4">
                     <Delta value={t.change} percent={t.changePercent} />
                   </td>
-                  <td className="py-3 px-4 text-emerald-400">₹{t.high.toFixed(2)}</td>
-                  <td className="py-3 px-4 text-rose-400">₹{t.low.toFixed(2)}</td>
+                  <td className="py-3 px-4 text-emerald-400">{formatMoney(t.high, currencyOf(t))}</td>
+                  <td className="py-3 px-4 text-rose-400">{formatMoney(t.low, currencyOf(t))}</td>
                   <td className="py-3 px-4 text-fg-2">{t.volume.toLocaleString()}</td>
                   <td className="py-3 px-4 font-bold text-accent">{t.relativeVolume}x</td>
                   <td className="py-3 px-4">

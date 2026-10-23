@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Candle, Signal } from '../../types';
+import { Candle, FreshnessState, Signal } from '../../types';
 import { PriceCell } from '../common/PriceCell';
 import { Delta } from '../common/Delta';
 import { FreshnessChip } from '../common/FreshnessChip';
@@ -10,6 +10,9 @@ interface InteractiveChartProps {
   candles: Candle[];
   signal?: Signal | null;
   onTimeframeChange?: (tf: string) => void;
+  /** Controlled timeframe; when omitted the chart tracks its own selection. */
+  timeframe?: string;
+  freshness?: FreshnessState;
   height?: number;
 }
 
@@ -18,10 +21,13 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
   candles,
   signal,
   onTimeframeChange,
+  timeframe,
+  freshness = 'LIVE',
   height = 480
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [selectedTf, setSelectedTf] = useState<string>('15m');
+  const [internalTf, setSelectedTf] = useState<string>('15m');
+  const selectedTf = timeframe ?? internalTf;
   const [showVwap, setShowVwap] = useState<boolean>(true);
   const [showEma, setShowEma] = useState<boolean>(true);
   const [hoveredCandle, setHoveredCandle] = useState<Candle | null>(null);
@@ -307,7 +313,7 @@ export const InteractiveChart: React.FC<InteractiveChartProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="font-bold text-base tracking-wide text-fg-0">{symbol}</span>
-            <FreshnessChip state="LIVE" />
+            <FreshnessChip state={freshness} />
           </div>
 
           {displayCandle && (

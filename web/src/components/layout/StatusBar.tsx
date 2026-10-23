@@ -1,45 +1,75 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUI } from '../../context/UIContext';
-import { AlertOctagon, Wifi, Database, Cpu } from 'lucide-react';
+import { analyticsApi } from '../../api/analyticsApi';
+import { HubState, signalRManager } from '../../api/signalr';
+import { SystemHealth } from '../../types';
+import { AlertOctagon, Wifi, WifiOff } from 'lucide-react';
+
+const LED: Record<string, string> = {
+  CONNECTED: 'bg-emerald-400 pulse-led',
+  RECONNECTING: 'bg-amber-400',
+  DISCONNECTED: 'bg-gray-500'
+};
 
 export const StatusBar: React.FC = () => {
   const { isKillSwitchModalOpen, setIsKillSwitchModalOpen, addToast } = useUI();
+  const [health, setHealth] = useState<SystemHealth | null>(null);
+  const [hubState, setHubState] = useState<HubState>('DISCONNECTED');
+
+  useEffect(() => {
+    const load = () => analyticsApi.getSystemHealth().then(setHealth).catch(() => setHealth(null));
+    load();
+    const interval = setInterval(load, 5000);
+    const unsubscribe = signalRManager.subscribeState(setHubState);
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, []);
+
+  const binance = health?.providers.find(p => p.name.startsWith('Binance'));
 
   return (
     <>
       <footer className="h-7 bg-bg-2 border-t border-border px-3 flex items-center justify-between text-[11px] font-mono select-none z-20">
-        {/* Left: Provider LEDs */}
+        {/* Left: Provider LEDs (live from /api/v1/health) */}
         <div className="flex items-center gap-4 text-fg-2">
-          <div className="flex items-center gap-1.5" title="Dhan SuperFast API latency: 38ms">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-led" />
-            <span className="text-fg-1">Dhan (NSE)</span>
-            <span className="text-[10px] text-fg-3">38ms</span>
-          </div>
-
-          <div className="flex items-center gap-1.5" title="Polygon CTA SIP latency: 52ms">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-fg-1">Polygon (US)</span>
-            <span className="text-[10px] text-fg-3">52ms</span>
-          </div>
-
-          <div className="flex items-center gap-1.5" title="Binance Futures WSS latency: 24ms">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-fg-1">Binance</span>
-            <span className="text-[10px] text-fg-3">24ms</span>
-          </div>
+          {!health && (
+            <div className="flex items-center gap-1.5 text-rose-400">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <span>Backend unreachable</span>
+            </div>
+          )}
+          {health?.providers.map(p => (
+            <div key={p.name} className="flex items-center gap-1.5" title={p.lastError ?? `${p.name}: ${p.status}`}>
+              <span className={`w-2 h-2 rounded-full ${LED[p.status] ?? LED.DISCONNECTED}`} />
+              <span className={p.status === 'CONNECTED' ? 'text-fg-1' : 'text-fg-3'}>{p.name.split(' ')[0]}</span>
+              <span className="text-[10px] text-fg-3">
+                {p.status === 'CONNECTED' ? `${p.latencyMs}ms` : p.status === 'RECONNECTING' ? 'retrying' : 'off'}
+              </span>
+            </div>
+          ))}
 
           <div className="hidden md:flex items-center gap-1 text-fg-3 border-l border-border pl-3">
-            <Wifi size={12} className="text-emerald-400" />
-            <span>SignalR: Connected (4 Hz)</span>
+            {hubState === 'CONNECTED'
+              ? <Wifi size={12} className="text-emerald-400" />
+              : <WifiOff size={12} className={hubState === 'DISCONNECTED' ? 'text-rose-400' : 'text-amber-400'} />}
+            <span>SignalR: {hubState.toLowerCase()}</span>
           </div>
         </div>
 
         {/* Right: Telemetry & Kill Switch */}
         <div className="flex items-center gap-3">
           <div className="hidden lg:flex items-center gap-3 text-fg-3">
-            <span>Tick Lag: <strong className="text-emerald-400">0.2s</strong></span>
-            <span>DB: <strong className="text-fg-2">PostgreSQL+Timescale</strong></span>
-            <span>CPU: <strong className="text-fg-2">14%</strong></span>
+            {binance && binance.lastTickAgeSec >= 0 && (
+              <span>
+                Tick Lag:{' '}
+                <strong className={binance.lastTickAgeSec < 5 ? 'text-emerald-400' : 'text-amber-400'}>
+                  {binance.lastTickAgeSec}s
+                </strong>
+              </span>
+            )}
+            {health && <span>RAM: <strong className="text-fg-2">{health.infrastructure.ramUsage}</strong></span>}
           </div>
 
           {/* Kill Switch Button */}

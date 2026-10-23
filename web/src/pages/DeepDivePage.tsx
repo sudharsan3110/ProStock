@@ -2,8 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useMarket } from '../context/MarketContext';
 import { useUI } from '../context/UIContext';
 import { signalApi } from '../api/signalApi';
-import { marketApi } from '../api/marketApi';
+import { useLiveCandles } from '../hooks/useLiveCandles';
+import { currencyOf } from '../utils/currency';
 import { Candle, Signal } from '../types';
+
+/** Bollinger(20, 2) bandwidth of the latest bar, as % of the middle band. */
+function bollingerWidth(candles: Candle[]): number | null {
+  if (candles.length < 20) return null;
+  const closes = candles.slice(-20).map(c => c.close);
+  const mean = closes.reduce((a, b) => a + b, 0) / 20;
+  const sd = Math.sqrt(closes.reduce((a, c) => a + (c - mean) ** 2, 0) / 20);
+  return mean > 0 ? ((4 * sd) / mean) * 100 : null;
+}
 import { InteractiveChart } from '../components/charts/InteractiveChart';
 import { PriceCell } from '../components/common/PriceCell';
 import { Delta } from '../components/common/Delta';
@@ -16,11 +26,13 @@ export const DeepDivePage: React.FC = () => {
   const { activeSymbol, activeTicker, tickers, setActiveSymbol } = useMarket();
   const { openOrderTicket, setSelectedSignal, setIsSignalDrawerOpen } = useUI();
 
-  const [candles, setCandles] = useState<Candle[]>([]);
+  const [timeframe, setTimeframe] = useState('15m');
+  const candles = useLiveCandles(activeSymbol, timeframe, activeTicker?.market === 'CRYPTO');
   const [signal, setSignal] = useState<Signal | null>(null);
+  const cur = currencyOf(activeTicker);
+  const bbWidth = bollingerWidth(candles);
 
   useEffect(() => {
-    marketApi.getCandles(activeSymbol).then(setCandles).catch(console.error);
     signalApi.getSignals().then(sigs => {
       const match = sigs.find(s => s.symbol === activeSymbol);
       setSignal(match || null);
@@ -42,11 +54,11 @@ export const DeepDivePage: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="text-2xl font-black text-fg-0 font-mono tracking-tight">{activeSymbol}</span>
             <span className="text-xs text-fg-3 font-mono">{activeTicker?.name}</span>
-            <FreshnessChip state="LIVE" />
+            <FreshnessChip state={activeTicker?.freshness ?? 'STALE'} />
           </div>
 
           <div className="flex items-center gap-3 border-l border-border pl-4">
-            <PriceCell price={activeTicker?.price || 0} className="text-xl" />
+            <PriceCell price={activeTicker?.price || 0} currency={cur} className="text-xl" />
             <Delta value={activeTicker?.change || 0} percent={activeTicker?.changePercent || 0} />
           </div>
         </div>
@@ -101,6 +113,9 @@ export const DeepDivePage: React.FC = () => {
         symbol={activeSymbol}
         candles={candles}
         signal={signal}
+        timeframe={timeframe}
+        onTimeframeChange={setTimeframe}
+        freshness={activeTicker?.freshness}
         height={500}
       />
 
@@ -143,11 +158,11 @@ export const DeepDivePage: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-fg-2">Session VWAP:</span>
-              <span className="text-yellow-400 font-bold">₹{activeTicker?.vwap.toFixed(2)}</span>
+              <span className="text-yellow-400 font-bold">{cur}{activeTicker?.vwap.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-fg-2">ATR (14):</span>
-              <span className="text-fg-0 font-bold">₹{activeTicker?.atr.toFixed(2)}</span>
+              <span className="text-fg-0 font-bold">{cur}{activeTicker?.atr.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-fg-2">Relative Volume:</span>
@@ -155,7 +170,7 @@ export const DeepDivePage: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-fg-2">Bollinger Band Width:</span>
-              <span className="text-fg-0 font-bold">2.4% (Compression)</span>
+              <span className="text-fg-0 font-bold">{bbWidth === null ? '—' : `${bbWidth.toFixed(2)}% (${timeframe})`}</span>
             </div>
           </div>
         </div>
@@ -172,11 +187,17 @@ export const DeepDivePage: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-fg-2">Quality Score:</span>
-              <ScoreBadge score={activeTicker?.score || 85} size="sm" />
+              {activeTicker?.score ? (
+                <ScoreBadge score={activeTicker.score} size="sm" />
+              ) : (
+                <span className="text-fg-3">No active setup</span>
+              )}
             </div>
             <div className="flex justify-between">
               <span className="text-fg-2">Feed Quality:</span>
-              <span className="text-emerald-400 font-bold">100% Zero-Loss</span>
+              <span className={`font-bold ${activeTicker?.freshness === 'LIVE' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {activeTicker?.market === 'CRYPTO' ? `Binance · ${activeTicker.freshness}` : 'Simulated feed'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-fg-2">Exchange:</span>

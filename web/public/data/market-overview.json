@@ -5,8 +5,7 @@
     { "symbol": "BANKNIFTY", "name": "Nifty Bank", "price": 52140.75, "change": 380.40, "changePercent": 0.74, "market": "NSE", "high": 52300.00, "low": 51820.30, "volume": 184000000 },
     { "symbol": "SENSEX", "name": "BSE Sensex", "price": 82450.10, "change": 490.15, "changePercent": 0.60, "market": "BSE", "high": 82600.00, "low": 82010.50, "volume": 95000000 },
     { "symbol": "INDIA VIX", "name": "India Volatility Index", "price": 13.82, "change": -0.34, "changePercent": -2.40, "market": "NSE", "high": 14.50, "low": 13.70, "volume": 0 },
-    { "symbol": "SPX", "name": "S&P 500 Index", "price": 5864.67, "change": 22.40, "changePercent": 0.38, "market": "US", "high": 5875.20, "low": 5840.10, "volume": 2100000000 },
-    { "symbol": "BTCUSDT", "name": "Bitcoin / Tether", "price": 68420.50, "change": 1250.30, "changePercent": 1.86, "market": "CRYPTO", "high": 68950.00, "low": 66800.00, "volume": 4250000000 }
+    { "symbol": "SPX", "name": "S&P 500 Index", "price": 5864.67, "change": 22.40, "changePercent": 0.38, "market": "US", "high": 5875.20, "low": 5840.10, "volume": 2100000000 }
   ],
   "marketBreadth": {
     "advances": 1420,

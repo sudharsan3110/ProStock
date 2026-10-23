@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Ticker, MarketSession, MarketBreadth } from '../types';
+import { Ticker } from '../types';
 import { marketApi, MarketOverviewResponse } from '../api/marketApi';
 import { signalRManager } from '../api/signalr';
 
@@ -39,50 +39,45 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     loadData();
 
-    // Subtle simulated price ticking to mimic live market feed updates
-    const interval = setInterval(() => {
-      setTickers(prev => prev.map(t => {
-        // Randomly tick 1 or 2 symbols
-        if (Math.random() > 0.65) {
-          const delta = (Math.random() - 0.49) * (t.price * 0.001);
-          const newPrice = Math.round((t.price + delta) * 100) / 100;
-          const newChange = Math.round((t.change + delta) * 100) / 100;
-          const newPct = Math.round((newChange / (newPrice - newChange) * 100) * 100) / 100;
-          return {
-            ...t,
-            price: newPrice,
-            change: newChange,
-            changePercent: newPct
-          };
-        }
-        return t;
-      }));
-    }, 2500);
-
-    // Initialize SignalR WebSocket connection for live tick streaming
-    try {
-      signalRManager.initMarketHub((tick: any) => {
-        if (!tick?.symbol) return;
-        setTickers(prev => prev.map(t => {
-          if (t.symbol === tick.symbol) {
-            return {
-              ...t,
-              price: tick.price ?? t.price,
-              change: tick.change ?? t.change,
-              changePercent: tick.changePercent ?? t.changePercent,
-              high: Math.max(t.high, tick.high ?? t.high),
-              low: Math.min(t.low, tick.low ?? t.low),
-              volume: tick.volume ?? t.volume
-            };
-          }
-          return t;
-        }));
+    // Live quotes over SignalR: Binance-streamed crypto plus the backend's simulated NSE/US
+    // feed. Each TickUpdate carries the full ticker, so merge every field it provides.
+    const unsubscribe = signalRManager.subscribeTicks(tick => {
+      if (!tick?.symbol) return;
+      setTickers(prev => {
+        let found = false;
+        const next = prev.map(t => {
+          if (t.symbol !== tick.symbol) return t;
+          found = true;
+          return { ...t, ...tick } as Ticker;
+        });
+        // A symbol first seen on the stream (e.g. added via PROSTOCK_BINANCE_SYMBOLS)
+        // appears once the tick carries a complete ticker.
+        return found || tick.name === undefined ? next : [...next, tick as Ticker];
       });
-    } catch (err) {
-      console.warn('SignalR init skipped:', err);
-    }
+    });
 
-    return () => clearInterval(interval);
+    // If the stream goes quiet (backend down, Binance disconnected), degrade crypto quotes
+    // from LIVE to DELAYED/STALE instead of presenting frozen prices as live.
+    const staleCheck = setInterval(() => {
+      const now = Date.now();
+      setTickers(prev => {
+        let changed = false;
+        const next = prev.map(t => {
+          if (t.market !== 'CRYPTO' || !t.lastUpdated) return t;
+          const ageSec = (now - Date.parse(t.lastUpdated)) / 1000;
+          const freshness = ageSec <= 5 ? 'LIVE' : ageSec <= 60 ? 'DELAYED' : 'STALE';
+          if (freshness === t.freshness) return t;
+          changed = true;
+          return { ...t, freshness } as Ticker;
+        });
+        return changed ? next : prev;
+      });
+    }, 2000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(staleCheck);
+    };
   }, []);
 
   const activeTicker = tickers.find(t => t.symbol === activeSymbol);

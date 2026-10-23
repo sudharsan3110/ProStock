@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { signalApi } from '../api/signalApi';
+import { signalRManager } from '../api/signalr';
+import { currencyOf } from '../utils/currency';
 import { Signal, Market, Direction, RegimeType } from '../types';
 import { useUI } from '../context/UIContext';
 import { useMarket } from '../context/MarketContext';
@@ -20,6 +22,10 @@ export const SignalsPage: React.FC = () => {
 
   useEffect(() => {
     signalApi.getSignals().then(setSignals).catch(console.error);
+    // Signals generated on each closed Binance 15m candle arrive without a refresh.
+    return signalRManager.subscribeSignals(sig =>
+      setSignals(prev => (prev.some(s => s.id === sig.id) ? prev : [sig, ...prev]))
+    );
   }, []);
 
   const filtered = signals.filter(s => {
@@ -152,15 +158,15 @@ export const SignalsPage: React.FC = () => {
               <div className="p-3 bg-bg-0/60 rounded-lg border border-border grid grid-cols-3 gap-2 text-center text-xs font-mono">
                 <div>
                   <div className="text-[10px] text-fg-3 uppercase">Entry Zone</div>
-                  <div className="font-bold text-fg-0 mt-0.5">₹{sig.plan.entryMin}</div>
+                  <div className="font-bold text-fg-0 mt-0.5">{currencyOf(sig)}{sig.plan.entryMin}</div>
                 </div>
                 <div>
                   <div className="text-[10px] text-rose-400 uppercase">Stop Loss</div>
-                  <div className="font-bold text-rose-400 mt-0.5">₹{sig.plan.stopLoss.toFixed(2)}</div>
+                  <div className="font-bold text-rose-400 mt-0.5">{currencyOf(sig)}{sig.plan.stopLoss.toFixed(2)}</div>
                 </div>
                 <div>
                   <div className="text-[10px] text-emerald-400 uppercase">Target 1</div>
-                  <div className="font-bold text-emerald-400 mt-0.5">₹{sig.plan.target1.toFixed(2)}</div>
+                  <div className="font-bold text-emerald-400 mt-0.5">{currencyOf(sig)}{sig.plan.target1.toFixed(2)}</div>
                 </div>
               </div>
 

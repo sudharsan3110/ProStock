@@ -25,6 +25,10 @@ export interface Ticker {
   regime: RegimeType;
   score: number;
   freshness: FreshnessState;
+  /** Quote-currency display symbol, e.g. "$" for crypto/US, "₹" for NSE. */
+  currency?: string;
+  tickSize?: number;
+  lastUpdated?: string;
 }
 
 export interface MarketIndex {
@@ -34,6 +38,7 @@ export interface MarketIndex {
   change: number;
   changePercent: number;
   market: Market;
+  currency?: string;
   high: number;
   low: number;
   volume: number;
@@ -143,6 +148,7 @@ export interface Signal {
   id: string;
   symbol: string;
   market: Market;
+  currency?: string;
   direction: Direction;
   timeframe: Timeframe;
   strategy: {
@@ -275,6 +281,9 @@ export interface SystemHealth {
     latencyMs: number;
     droppedTicks: number;
     lastTickAgeSec: number;
+    messagesReceived?: number;
+    reconnects?: number;
+    lastError?: string | null;
   }[];
   pipeline: {
     candleAggregationDelayMs: number;

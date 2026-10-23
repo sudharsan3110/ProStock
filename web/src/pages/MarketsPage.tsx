@@ -4,7 +4,8 @@ import { PriceCell } from '../components/common/PriceCell';
 import { Delta } from '../components/common/Delta';
 import { RegimeBadge } from '../components/common/RegimeBadge';
 import { FreshnessChip } from '../components/common/FreshnessChip';
-import { Globe, TrendingUp, TrendingDown, Layers } from 'lucide-react';
+import { Globe } from 'lucide-react';
+import { currencyOf, formatCompact, formatMoney } from '../utils/currency';
 
 export const MarketsPage: React.FC = () => {
   const { overview, tickers, setActiveSymbol } = useMarket();
@@ -69,6 +70,73 @@ export const MarketsPage: React.FC = () => {
         </div>
       )}
 
+      {/* Crypto 24/7 strip — every figure is derived from the live Binance stream */}
+      {selectedTab === 'CRYPTO' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {filteredTickers.length === 0 && (
+            <div className="pro-card p-4 text-xs font-mono text-fg-3 md:col-span-3">
+              Waiting for Binance market data… (backend offline or PROSTOCK_BINANCE_ENABLED=false)
+            </div>
+          )}
+          {filteredTickers.map(t => {
+            const cur = currencyOf(t);
+            const range = t.high - t.low;
+            const pos = range > 0 ? ((t.price - t.low) / range) * 100 : 50;
+            const atrPct = t.price > 0 ? (t.atr / t.price) * 100 : 0;
+            return (
+              <button
+                key={t.symbol}
+                onClick={() => setActiveSymbol(t.symbol)}
+                className="pro-card p-4 text-left space-y-3 hover:border-border-light transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-bold text-fg-0">{t.symbol}</div>
+                    <div className="text-[10px] font-mono text-fg-3">{t.name}</div>
+                  </div>
+                  <FreshnessChip state={t.freshness} />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <PriceCell price={t.price} currency={cur} className="text-lg" />
+                  <Delta value={t.change} percent={t.changePercent} />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px] font-mono text-fg-3">
+                    <span>24h L {formatMoney(t.low, cur)}</span>
+                    <span>24h H {formatMoney(t.high, cur)}</span>
+                  </div>
+                  <div className="relative h-1.5 rounded-full bg-bg-3">
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent"
+                      style={{ left: `calc(${Math.min(100, Math.max(0, pos))}% - 4px)` }}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-[10px] font-mono">
+                  <div>
+                    <span className="text-fg-3 block">24h VWAP</span>
+                    <span className="text-yellow-400 font-semibold">{formatMoney(t.vwap, cur)}</span>
+                  </div>
+                  <div>
+                    <span className="text-fg-3 block">24h VOL</span>
+                    <span className="text-fg-0 font-semibold">{formatCompact(t.volume)}</span>
+                  </div>
+                  <div>
+                    <span className="text-fg-3 block">RVOL 20D</span>
+                    <span className="text-accent font-semibold">{t.relativeVolume}x</span>
+                  </div>
+                  <div>
+                    <span className="text-fg-3 block">ATR 15m</span>
+                    <span className="text-fg-0 font-semibold">{atrPct.toFixed(2)}%</span>
+                  </div>
+                </div>
+                <RegimeBadge regime={t.regime} />
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Tickers Table */}
       <div className="pro-card overflow-hidden">
         <div className="pro-card-header">
@@ -102,13 +170,13 @@ export const MarketsPage: React.FC = () => {
                   <td className="py-3 px-4 text-fg-2">{t.name}</td>
                   <td className="py-3 px-4 text-fg-3">{t.sector}</td>
                   <td className="py-3 px-4 font-semibold">
-                    <PriceCell price={t.price} />
+                    <PriceCell price={t.price} currency={currencyOf(t)} />
                   </td>
                   <td className="py-3 px-4">
                     <Delta value={t.change} percent={t.changePercent} />
                   </td>
                   <td className="py-3 px-4 text-fg-3">
-                    ₹{t.low.toFixed(1)} - ₹{t.high.toFixed(1)}
+                    {formatMoney(t.low, currencyOf(t))} - {formatMoney(t.high, currencyOf(t))}
                   </td>
                   <td className="py-3 px-4 font-bold text-accent">{t.relativeVolume}x</td>
                   <td className="py-3 px-4">

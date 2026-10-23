@@ -7,5 +7,5 @@ export const analyticsApi = {
   getRiskTelemetry: () => apiFetch<any>('risk/telemetry', 'risk-telemetry.json'),
   getNews: () => apiFetch<NewsItem[]>('news/sentiment', 'news-sentiment.json'),
   getCalendar: () => apiFetch<CalendarEvent[]>('calendar/events', 'calendar-events.json'),
-  getSystemHealth: () => apiFetch<SystemHealth>('telemetry/health', 'system-health.json')
+  getSystemHealth: () => apiFetch<SystemHealth>('telemetry/health', null)
 };
