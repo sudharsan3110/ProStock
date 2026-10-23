@@ -51,7 +51,8 @@ public static class DatabaseSeeder
                 new Instrument { Symbol = "INFY", Name = "Infosys Ltd", Exchange = "NSE", Market = MarketExchange.NSE, Sector = "IT", Price = 1890.50m, Change = -12.40m, ChangePercent = -0.65m, High = 1910.00m, Low = 1882.00m, Volume = 6890000, AvgVolume = 7100000, RelativeVolume = 0.97m, Vwap = 1895.00m, Atr = 22.00m, Regime = RegimeType.Ranging, Score = 65 },
                 new Instrument { Symbol = "HDFCBANK", Name = "HDFC Bank Ltd", Exchange = "NSE", Market = MarketExchange.NSE, Sector = "Banking", Price = 1680.00m, Change = 8.10m, ChangePercent = 0.48m, High = 1692.00m, Low = 1674.00m, Volume = 12450000, AvgVolume = 11000000, RelativeVolume = 1.13m, Vwap = 1682.00m, Atr = 18.50m, Regime = RegimeType.TrendingBull, Score = 79 },
                 new Instrument { Symbol = "NIFTY 50", Name = "Nifty 50 Benchmark Index", Exchange = "NSE", Market = MarketExchange.NSE, Sector = "Benchmark", Price = 25180.00m, Change = 120.40m, ChangePercent = 0.48m, High = 25220.00m, Low = 25090.00m, Volume = 45200000, AvgVolume = 42000000, RelativeVolume = 1.08m, Vwap = 25140.00m, Atr = 140.00m, Regime = RegimeType.TrendingBull, Score = 85 },
-                new Instrument { Symbol = "BTCUSDT", Name = "Bitcoin / Tether USD", Exchange = "Binance", Market = MarketExchange.Binance, Sector = "Crypto", Price = 68420.00m, Change = 1820.00m, ChangePercent = 2.73m, High = 68900.00m, Low = 66500.00m, Volume = 38400, AvgVolume = 32000, RelativeVolume = 1.20m, Vwap = 67800.00m, Atr = 1250.00m, Regime = RegimeType.VolatilityExpansion, Score = 91 },
+                // Crypto instruments (BTCUSDT, ETHUSDT, SOLUSDT, ...) are created and kept live by
+                // BinanceMarketDataWorker from PROSTOCK_BINANCE_SYMBOLS — nothing to seed here.
                 new Instrument { Symbol = "AAPL", Name = "Apple Inc", Exchange = "NASDAQ", Market = MarketExchange.NASDAQ, Sector = "Technology", Price = 232.50m, Change = 3.20m, ChangePercent = 1.40m, High = 234.00m, Low = 229.80m, Volume = 52400000, AvgVolume = 48000000, RelativeVolume = 1.09m, Vwap = 231.80m, Atr = 3.80m, Regime = RegimeType.TrendingBull, Score = 86 }
             };
 
@@ -75,7 +76,8 @@ public static class DatabaseSeeder
         if (!await context.Candles.AnyAsync())
         {
             var baseTime = DateTime.UtcNow.AddHours(-16);
-            var instList = await context.Instruments.ToListAsync();
+            // Crypto history comes from Binance klines, never synthetic data.
+            var instList = await context.Instruments.Where(i => i.Market != MarketExchange.Binance).ToListAsync();
             var allCandles = new List<Candle>();
 
             foreach (var inst in instList)
@@ -148,45 +150,24 @@ public static class DatabaseSeeder
                     GroundingFactsJson = "[\"Price currently 2482.40, VWAP at 2478.20\",\"ATR is 32.50 INR, SL set at 2450 (-0.99R)\",\"Target 1 at 2515 (+1.00R), Target 2 at 2540 (+1.77R)\"]",
                     HashSha256 = "c8f921ab3948d910efb17849c0291e0a814a012b10934857201cba810482910a",
                     CreatedAt = DateTime.UtcNow.AddMinutes(-12)
-                },
-                new Signal
-                {
-                    Symbol = "BTCUSDT",
-                    Market = MarketExchange.Binance,
-                    Direction = Direction.Long,
-                    Timeframe = Timeframe.H1,
-                    StrategyName = "BreakoutVolumeConfirmation",
-                    StrategyVersion = "1.4.0",
-                    StrategyAuthor = "ProStock Quant Team",
-                    Regime = RegimeType.VolatilityExpansion,
-                    Freshness = FreshnessState.Live,
-                    Mode = SignalMode.Live,
-                    Status = SignalStatus.Active,
-                    EntryMin = 68100.00m,
-                    EntryMax = 68450.00m,
-                    CurrentPrice = 68420.00m,
-                    StopLoss = 66900.00m,
-                    Target1 = 70200.00m,
-                    Target2 = 71500.00m,
-                    Target3 = 73000.00m,
-                    RiskReward = 2.5m,
-                    SuggestedQty = 1,
-                    DollarRisk = 1520.00m,
-                    HeatImpactPercent = 0.15m,
-                    TotalScore = 91m,
-                    FactorCoverage = 100m,
-                    FactorsJson = "[{\"name\":\"20-Bar High Breakout\",\"score\":25,\"max\":25},{\"name\":\"RVOL Confirmation (1.20x)\",\"score\":20,\"max\":20},{\"name\":\"MACD Bullish Histogram Expansion\",\"score\":18,\"max\":20},{\"name\":\"Bollinger Expansion Bandwidth\",\"score\":15,\"max\":15},{\"name\":\"Market Delta Absorption\",\"score\":13,\"max\":20}]",
-                    GatesPassedJson = "[\"Data Quality > 99.9%\",\"Funding Rate Neutral [0.008%]\",\"Binance 24h Depth Adequate\",\"Portfolio Heat Cap < 30%\"]",
-                    ReasonsJson = "[\"Aggressive structural breakout above 68,000 resistance\",\"RVOL 1.20x confirming buyer aggression\",\"ATR 1250 expanding in Volatility Expansion regime\"]",
-                    InvalidationJson = "[\"Hourly candle close back below 66,900\",\"Failure of market buy delta\"]",
-                    Summary = "Structural breakout on BTCUSDT with expanding ATR bandwidth and strong institutional market buy delta.",
-                    GroundingFactsJson = "[\"Current price 68420.00, entry zone 68100-68450\",\"SL set at 66900 (-1520 USD)\",\"TP1 at 70200 (+1800 USD)\"]",
-                    HashSha256 = "b91048f0291e0a814a012b10934857201cba810482910ac8f921ab3948d910ef",
-                    CreatedAt = DateTime.UtcNow.AddMinutes(-34)
                 }
             };
 
             context.Signals.AddRange(signals);
+        }
+
+        // 5b. Repair databases created by earlier builds:
+        //   - drop the fabricated BTCUSDT seed signal (priced at a static 68,420);
+        //   - reset day-change figures corrupted by the old simulator, which measured every
+        //     instrument's change against a fixed 2,450 reference price.
+        const string legacyFakeCryptoSignalHash = "b91048f0291e0a814a012b10934857201cba810482910ac8f921ab3948d910ef";
+        await context.Signals.Where(s => s.HashSha256 == legacyFakeCryptoSignalHash).ExecuteDeleteAsync();
+
+        var simulated = await context.Instruments.Where(i => i.Market != MarketExchange.Binance).ToListAsync();
+        foreach (var inst in simulated.Where(i => Math.Abs(i.Price - i.Change - 2450m) < 0.01m))
+        {
+            inst.Change = 0;
+            inst.ChangePercent = 0;
         }
 
         // 6. Seed Initial Positions and Orders for Paper Account

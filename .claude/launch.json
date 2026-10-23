@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "prostock-web-5080",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["VITE_API_BASE_URL=http://localhost:5080/api/v1", "npm", "--prefix", "web", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

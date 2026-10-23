@@ -5,6 +5,7 @@ using ProStock.Application.Interfaces;
 using ProStock.Application.Interfaces.Engines;
 using ProStock.Application.Interfaces.Security;
 using ProStock.Infrastructure.Engines;
+using ProStock.Infrastructure.MarketData;
 using ProStock.Infrastructure.Persistence;
 using ProStock.Infrastructure.Security;
 using ProStock.Infrastructure.Services;
@@ -50,6 +51,13 @@ public static class DependencyInjection
         // 4. Alert & AI Explainer Services
         services.AddSingleton<IAlertDispatcher, AlertDispatcher>();
         services.AddSingleton<ILLMExplainerService, OllamaExplainerService>();
+
+        // 5. Binance live crypto market data
+        services.AddSingleton(BinanceOptions.FromConfiguration(configuration));
+        services.AddSingleton<BinanceRestClient>();
+        services.AddSingleton<BinanceStreamClient>();
+        services.AddSingleton<MarketFeedHealth>();
+        services.AddSingleton<CryptoMarketAnalytics>();
 
         return services;
     }

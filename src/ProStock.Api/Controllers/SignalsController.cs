@@ -1,6 +1,6 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProStock.Api.Contracts;
 using ProStock.Application.Interfaces;
 using ProStock.Application.Interfaces.Engines;
 using ProStock.Domain.Entities;
@@ -34,7 +34,7 @@ public class SignalsController : ControllerBase
             .Take(50)
             .ToListAsync(ct);
 
-        var result = rawSignals.Select(s => MapSignalToDto(s)).ToList();
+        var result = rawSignals.Select(ApiMappers.ToSignalDto).ToList();
         return Ok(result);
     }
 
@@ -44,7 +44,7 @@ public class SignalsController : ControllerBase
         var signal = await _context.Signals.FindAsync(new object[] { id }, ct);
         if (signal == null) return NotFound();
 
-        return Ok(MapSignalToDto(signal));
+        return Ok(ApiMappers.ToSignalDto(signal));
     }
 
     [HttpPost("scan")]
@@ -91,88 +91,7 @@ public class SignalsController : ControllerBase
         {
             scannedInstruments = instruments.Count,
             signalsGenerated = generatedSignals.Count,
-            signals = generatedSignals.Select(s => MapSignalToDto(s))
+            signals = generatedSignals.Select(ApiMappers.ToSignalDto)
         });
-    }
-
-    private static object MapSignalToDto(Signal s)
-    {
-        return new
-        {
-            id = s.Id.ToString(),
-            symbol = s.Symbol,
-            market = s.Market.ToString(),
-            direction = s.Direction.ToString().ToUpper(),
-            timeframe = s.Timeframe.ToString(),
-            strategy = new
-            {
-                name = s.StrategyName,
-                version = s.StrategyVersion,
-                author = s.StrategyAuthor
-            },
-            regime = s.Regime.ToString().ToUpper(),
-            freshness = s.Freshness.ToString().ToUpper(),
-            mode = s.Mode.ToString().ToUpper(),
-            status = s.Status.ToString().ToUpper(),
-            plan = new
-            {
-                entryMin = s.EntryMin,
-                entryMax = s.EntryMax,
-                currentPrice = s.CurrentPrice,
-                stopLoss = s.StopLoss,
-                target1 = s.Target1,
-                target2 = s.Target2,
-                target3 = s.Target3,
-                riskReward = s.RiskReward,
-                suggestedQty = s.SuggestedQty,
-                dollarRisk = s.DollarRisk,
-                heatImpactPercent = s.HeatImpactPercent
-            },
-            score = new
-            {
-                total = (int)s.TotalScore,
-                factorCoverage = (int)s.FactorCoverage,
-                factors = SafeDeserialize(s.FactorsJson),
-                gatesPassed = SafeDeserialize(s.GatesPassedJson)
-            },
-            reasons = SafeDeserialize(s.ReasonsJson),
-            invalidation = SafeDeserialize(s.InvalidationJson),
-            context = new
-            {
-                eventRisks = "No High-Impact Blackout Events Active",
-                dataQualityScore = "99.8% (Zero Missing Ticks)",
-                volumeSemantics = "Aggressive Market Buy Delta",
-                correlatedPositions = "0 Existing in this Sector"
-            },
-            evidence = new
-            {
-                historicalWinRate = 67.4m,
-                sampleSize = 142,
-                confidenceInterval = "95% [62.1% - 72.7%]",
-                profitFactor = 2.34m,
-                sharpeRatio = 2.15m,
-                averageHoldingTime = "4h 22m"
-            },
-            aiExplanation = new
-            {
-                summary = s.Summary,
-                groundingFacts = SafeDeserialize(s.GroundingFactsJson),
-                generatedAt = s.CreatedAt.ToString("HH:mm:ss")
-            },
-            timestamp = s.CreatedAt.ToString("O"),
-            hash = s.HashSha256
-        };
-    }
-
-    private static dynamic SafeDeserialize(string json)
-    {
-        try
-        {
-            return JsonSerializer.Deserialize<dynamic>(json) ?? new object[] { };
-        }
-        catch
-        {
-            return new object[] { };
-        }
     }
 }

@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProStock.Application.Interfaces;
 using ProStock.Application.Interfaces.Engines;
 using ProStock.Domain.Entities;
 using ProStock.Domain.Enums;
+using ProStock.Infrastructure.MarketData;
 
 namespace ProStock.Api.Controllers;
 
@@ -130,30 +132,42 @@ public class BacktestController : ControllerBase
 [Route("api/v1/health")]
 public class SystemHealthController : ControllerBase
 {
-    private readonly IApplicationDbContext _context;
+    private readonly MarketFeedHealth _binanceHealth;
 
-    public SystemHealthController(IApplicationDbContext context)
+    public SystemHealthController(MarketFeedHealth binanceHealth)
     {
-        _context = context;
+        _binanceHealth = binanceHealth;
     }
 
     [HttpGet]
     [HttpGet("/api/v1/telemetry/health")]
-    public async Task<IActionResult> GetHealth(CancellationToken ct)
+    public IActionResult GetHealth()
     {
-        var providers = new[]
+        var binance = _binanceHealth.Snapshot();
+        var binanceStatus = binance.State switch
         {
-            new { name = "DhanHQ Live Feed", status = "CONNECTED", latencyMs = 24.2, droppedTicks = 0, lastTickAgeSec = 0.4 },
-            new { name = "Alpaca IEX Stream", status = "CONNECTED", latencyMs = 68.5, droppedTicks = 0, lastTickAgeSec = 1.1 },
-            new { name = "Binance Kline Stream", status = "CONNECTED", latencyMs = 45.1, droppedTicks = 0, lastTickAgeSec = 0.2 }
+            FeedConnectionState.Connected when binance.LastMessageAgeSec is null or < 10 => "CONNECTED",
+            FeedConnectionState.Connected or FeedConnectionState.Connecting or FeedConnectionState.Reconnecting => "RECONNECTING",
+            _ => "DISCONNECTED"
         };
+
+        // DhanHQ and Alpaca have no ingestion code yet; NSE/US prices are simulated.
+        var providers = new object[]
+        {
+            new { name = binance.ProviderName, status = binanceStatus, latencyMs = binance.LatencyMs, droppedTicks = 0, lastTickAgeSec = binance.LastMessageAgeSec ?? -1, messagesReceived = binance.MessagesReceived, reconnects = binance.Reconnects, lastError = binance.LastError },
+            new { name = "DhanHQ Live Feed", status = "DISCONNECTED", latencyMs = 0.0, droppedTicks = 0, lastTickAgeSec = -1.0, messagesReceived = 0L, reconnects = 0, lastError = (string?)"Not integrated — NSE prices are simulated" },
+            new { name = "Alpaca IEX Stream", status = "DISCONNECTED", latencyMs = 0.0, droppedTicks = 0, lastTickAgeSec = -1.0, messagesReceived = 0L, reconnects = 0, lastError = (string?)"Not integrated — US prices are simulated" }
+        };
+
+        var process = Process.GetCurrentProcess();
+        var uptime = DateTime.Now - process.StartTime;
 
         var pipeline = new
         {
             candleAggregationDelayMs = 4.2,
             signalEvaluationTimeMs = 8.1,
             dbWriteLatencyMs = 2.4,
-            signalRConflationHz = 20,
+            signalRConflationHz = 1,
             activeSubscribers = 1,
             watchdogHeartbeat = "ACTIVE"
         };
@@ -161,16 +175,16 @@ public class SystemHealthController : ControllerBase
         var infrastructure = new
         {
             cpuLoad = "4.2%",
-            ramUsage = "384 MB / 16 GB",
+            ramUsage = $"{process.WorkingSet64 / (1024 * 1024)} MB",
             storageUsed = "1.2 GB / 250 GB",
             activeDatabase = "ProStock SQLite / TimescaleDB Ready"
         };
 
         return Ok(new
         {
-            status = "OPTIMAL",
-            uptime = "18d 4h 12m",
-            startedAt = DateTime.UtcNow.AddDays(-18).ToString("O"),
+            status = binanceStatus == "CONNECTED" ? "OPTIMAL" : "DEGRADED",
+            uptime = $"{(int)uptime.TotalDays}d {uptime.Hours}h {uptime.Minutes}m",
+            startedAt = process.StartTime.ToUniversalTime().ToString("O"),
             providers,
             pipeline,
             infrastructure

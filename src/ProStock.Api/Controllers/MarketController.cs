@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using ProStock.Api.Contracts;
 using ProStock.Application.Interfaces;
-using ProStock.Domain.Entities;
 using ProStock.Domain.Enums;
+using ProStock.Infrastructure.MarketData;
 
 namespace ProStock.Api.Controllers;
 
@@ -10,11 +12,23 @@ namespace ProStock.Api.Controllers;
 [Route("api/v1/[controller]")]
 public class MarketController : ControllerBase
 {
-    private readonly IApplicationDbContext _context;
+    private const int ChartCandles = 120;
 
-    public MarketController(IApplicationDbContext context)
+    private readonly IApplicationDbContext _context;
+    private readonly BinanceOptions _binance;
+    private readonly BinanceRestClient _binanceRest;
+    private readonly IMemoryCache _cache;
+
+    public MarketController(
+        IApplicationDbContext context,
+        BinanceOptions binance,
+        BinanceRestClient binanceRest,
+        IMemoryCache cache)
     {
         _context = context;
+        _binance = binance;
+        _binanceRest = binanceRest;
+        _cache = cache;
     }
 
     [HttpGet("overview")]
@@ -29,7 +43,8 @@ public class MarketController : ControllerBase
             price = i.Price,
             change = i.Change,
             changePercent = i.ChangePercent,
-            market = i.Market.ToString(),
+            market = ApiMappers.MarketLabel(i.Market),
+            currency = i.Market.CurrencySymbol(),
             high = i.High,
             low = i.Low,
             volume = i.Volume
@@ -59,43 +74,48 @@ public class MarketController : ControllerBase
             indices,
             sectors,
             marketBreadth,
+            marketSessions = MarketSessions.Current(DateTime.UtcNow),
             lastUpdated = DateTime.UtcNow
         });
     }
 
     [HttpGet("tickers")]
-    public async Task<ActionResult<IEnumerable<Instrument>>> GetTickers(CancellationToken ct)
+    public async Task<IActionResult> GetTickers(CancellationToken ct)
     {
-        var tickers = await _context.Instruments.OrderBy(i => i.Symbol).ToListAsync(ct);
-        return Ok(tickers);
+        var instruments = await _context.Instruments.OrderBy(i => i.Symbol).ToListAsync(ct);
+        var now = DateTime.UtcNow;
+        return Ok(instruments.Select(i => ApiMappers.ToTickerDto(i, now)));
     }
 
-    public record CandleDto(string Time, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap);
+    public record CandleDto(string Time, decimal Open, decimal High, decimal Low, decimal Close, decimal Volume, decimal Vwap);
 
     [HttpGet("candles")]
     public async Task<IActionResult> GetCandles([FromQuery] string symbol = "RELIANCE", [FromQuery] string timeframe = "15m", CancellationToken ct = default)
     {
-        var candles = await FetchCandlesForSymbol(symbol, ct);
-        return Ok(candles);
+        var (candles, error) = await FetchCandlesForSymbol(symbol, timeframe, ct);
+        return error ?? Ok(candles);
     }
 
     [HttpGet("candles/{symbol}")]
     public async Task<IActionResult> GetCandlesBySymbol(string symbol, [FromQuery] string timeframe = "15m", CancellationToken ct = default)
     {
-        var candles = await FetchCandlesForSymbol(symbol, ct);
-        var result = new Dictionary<string, List<CandleDto>>
-        {
-            [symbol] = candles
-        };
-        return Ok(result);
+        var (candles, error) = await FetchCandlesForSymbol(symbol, timeframe, ct);
+        if (error != null) return error;
+
+        return Ok(new Dictionary<string, List<CandleDto>> { [symbol] = candles! });
     }
 
-    private async Task<List<CandleDto>> FetchCandlesForSymbol(string symbol, CancellationToken ct)
+    private async Task<(List<CandleDto>? Candles, IActionResult? Error)> FetchCandlesForSymbol(string symbol, string timeframe, CancellationToken ct)
     {
+        if (_binance.IsTracked(symbol))
+        {
+            return await FetchBinanceCandles(symbol.ToUpperInvariant(), timeframe, ct);
+        }
+
         var dbCandles = await _context.Candles
             .Where(c => c.Symbol == symbol)
             .OrderBy(c => c.Timestamp)
-            .Take(120)
+            .Take(ChartCandles)
             .Select(c => new CandleDto(
                 c.Timestamp.ToString("HH:mm"),
                 c.Open,
@@ -107,12 +127,43 @@ public class MarketController : ControllerBase
             ))
             .ToListAsync(ct);
 
-        if (dbCandles.Count > 0)
+        return (dbCandles.Count > 0 ? dbCandles : GenerateFallbackCandles(symbol), null);
+    }
+
+    /// <summary>
+    /// Crypto charts come straight from Binance klines for whichever interval the chart asks
+    /// for, cached briefly so several open charts don't multiply REST calls.
+    /// </summary>
+    private async Task<(List<CandleDto>? Candles, IActionResult? Error)> FetchBinanceCandles(string symbol, string timeframe, CancellationToken ct)
+    {
+        var interval = BinanceIntervals.FromLabel(timeframe);
+        if (interval == null)
         {
-            return dbCandles;
+            return (null, BadRequest(new { message = $"Unsupported timeframe '{timeframe}'." }));
         }
 
-        return GenerateFallbackCandles(symbol);
+        try
+        {
+            var candles = await _cache.GetOrCreateAsync($"binance:klines:{symbol}:{interval}", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5);
+                var klines = await _binanceRest.GetKlinesAsync(symbol, interval, ChartCandles, ct);
+                var vwap = CryptoMarketAnalytics.SessionVwap(klines, resetDaily: interval is not ("1d" or "1w"));
+                return klines.Select((k, idx) => new CandleDto(
+                    k.OpenTimeUtc.ToString("O"),
+                    k.Open,
+                    k.High,
+                    k.Low,
+                    k.Close,
+                    k.Volume,
+                    Math.Round(vwap[idx], 4))).ToList();
+            });
+            return (candles, null);
+        }
+        catch (Exception ex) when (ex is BinanceApiException or HttpRequestException or TaskCanceledException)
+        {
+            return (null, StatusCode(StatusCodes.Status502BadGateway, new { message = $"Binance candles unavailable: {ex.Message}" }));
+        }
     }
 
     private List<CandleDto> GenerateFallbackCandles(string symbol)

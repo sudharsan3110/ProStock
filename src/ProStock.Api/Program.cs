@@ -82,6 +82,8 @@ builder.Services.AddAuthorization();
 // 4. SignalR & Background Workers
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<MarketSimulationWorker>();
+builder.Services.AddHostedService<BinanceMarketDataWorker>();
+builder.Services.AddMemoryCache();
 
 // 5. Controllers & JSON Options
 builder.Services.AddControllers()

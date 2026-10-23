@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using ProStock.Api.Contracts;
 using ProStock.Api.Hubs;
 using ProStock.Application.Interfaces;
 using ProStock.Application.Interfaces.Engines;
 using ProStock.Domain.Entities;
+using ProStock.Domain.Enums;
 
 namespace ProStock.Api.BackgroundServices;
 
@@ -38,15 +40,22 @@ public class MarketSimulationWorker : BackgroundService
                 var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
                 var paperBroker = scope.ServiceProvider.GetRequiredService<IPaperBroker>();
 
-                var instruments = await context.Instruments.Take(10).ToListAsync(stoppingToken);
+                // Crypto instruments carry live Binance data (BinanceMarketDataWorker); only
+                // markets without a connected feed are simulated here.
+                var instruments = await context.Instruments
+                    .Where(i => i.Market != MarketExchange.Binance)
+                    .Take(10)
+                    .ToListAsync(stoppingToken);
 
+                var now = DateTime.UtcNow;
                 foreach (var inst in instruments)
                 {
-                    // Simulated real-time tick micro-fluctuation
+                    // Simulated real-time tick micro-fluctuation around the session's reference price
+                    decimal referencePrice = inst.Price - inst.Change;
                     decimal delta = (decimal)(Random.Shared.NextDouble() - 0.49) * (inst.Price * 0.0008m);
                     inst.Price = Math.Round(inst.Price + delta, 2);
-                    inst.Change = inst.Price - 2450m;
-                    inst.ChangePercent = Math.Round((inst.Change / 2450m) * 100, 2);
+                    inst.Change = inst.Price - referencePrice;
+                    inst.ChangePercent = referencePrice != 0 ? Math.Round((inst.Change / referencePrice) * 100, 2) : 0;
                     inst.High = Math.Max(inst.High, inst.Price);
                     inst.Low = Math.Min(inst.Low, inst.Price);
                     inst.Volume += Random.Shared.Next(100, 2500);
@@ -55,17 +64,7 @@ public class MarketSimulationWorker : BackgroundService
                     await paperBroker.ProcessTickAsync(inst.Symbol, inst.Price, stoppingToken);
 
                     // Broadcast live tick to SignalR clients
-                    await _marketHub.Clients.All.SendAsync("TickUpdate", new
-                    {
-                        symbol = inst.Symbol,
-                        price = inst.Price,
-                        change = inst.Change,
-                        changePercent = inst.ChangePercent,
-                        high = inst.High,
-                        low = inst.Low,
-                        volume = inst.Volume,
-                        time = DateTime.UtcNow.ToString("HH:mm:ss")
-                    }, stoppingToken);
+                    await _marketHub.Clients.All.SendAsync("TickUpdate", ApiMappers.ToTickerDto(inst, now), stoppingToken);
                 }
 
                 await context.SaveChangesAsync(stoppingToken);

@@ -22,6 +22,7 @@ public class DeterministicSignalEngine : ISignalEngine
         if (candles.Length < 30) return Task.FromResult<Signal?>(null);
 
         var instrument = context.Instrument;
+        string cur = instrument.Market.CurrencySymbol();
         var closes = candles.Select(c => c.Close).ToArray();
         var lastCandle = candles[^1];
 
@@ -113,18 +114,18 @@ public class DeterministicSignalEngine : ISignalEngine
         {
             new { rule = "RSI Confluence", value = $"{currentRsi:F1}", threshold = "40 - 65", passed = true, note = "RSI in healthy bullish expansion zone" },
             new { rule = "Volume Confirmation", value = $"{instrument.RelativeVolume:F2}x", threshold = ">= 1.2x", passed = true, note = "Institutional participation confirmed" },
-            new { rule = "VWAP Support", value = $"₹{vwap:F2}", threshold = "<= 1.5% distance", passed = true, note = "Price retesting session VWAP base" }
+            new { rule = "VWAP Support", value = $"{cur}{vwap:F2}", threshold = "<= 1.5% distance", passed = true, note = "Price retesting session VWAP base" }
         };
 
         var invalidation = new[]
         {
-            new { condition = $"Close below ₹{stopLoss:F2} before Entry", status = "ACTIVE" },
+            new { condition = $"Close below {cur}{stopLoss:F2} before Entry", status = "ACTIVE" },
             new { condition = "ADX breakdown below 20", status = "SAFE" }
         };
 
         var groundingFacts = new[]
         {
-            $"Price (₹{currentPrice:F2}) holding above session VWAP (₹{vwap:F2})",
+            $"Price ({cur}{currentPrice:F2}) holding above session VWAP ({cur}{vwap:F2})",
             $"RVOL is {instrument.RelativeVolume:F2}x against 20-day historical mean",
             $"Stop loss positioned at structural swing pivot with 1.5R target"
         };

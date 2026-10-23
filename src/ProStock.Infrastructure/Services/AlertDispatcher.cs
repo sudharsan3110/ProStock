@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using ProStock.Application.Interfaces.Engines;
 using ProStock.Domain.Entities;
+using ProStock.Domain.Enums;
 
 namespace ProStock.Infrastructure.Services;
 
@@ -23,14 +24,15 @@ public class AlertDispatcher : IAlertDispatcher
         var chatId = _config["PROSTOCK_TELEGRAM_CHAT_ID"];
         var discordWebhook = _config["PROSTOCK_DISCORD_WEBHOOK_URL"];
 
+        string cur = signal.Market.CurrencySymbol();
         string isLong = signal.Direction == Domain.Enums.Direction.Long ? "🟢 LONG" : "🔴 SHORT";
         string message = $@"🚨 *PROSTOCK ALGO SIGNAL* 🚨
 {isLong}: *{signal.Symbol}* ({signal.Market})
 Strategy: `{signal.StrategyName}`
-Entry: ₹{signal.EntryMin:N2} - ₹{signal.EntryMax:N2}
-Stop Loss: ₹{signal.StopLoss:N2}
-Target 1: ₹{signal.Target1:N2} (1.5R)
-Target 2: ₹{signal.Target2:N2} (2.5R)
+Entry: {cur}{signal.EntryMin:N2} - {cur}{signal.EntryMax:N2}
+Stop Loss: {cur}{signal.StopLoss:N2}
+Target 1: {cur}{signal.Target1:N2} (1.5R)
+Target 2: {cur}{signal.Target2:N2} (2.5R)
 Setup Score: *{signal.TotalScore}/100*
 Regime: `{signal.Regime}`";
 
@@ -66,9 +68,9 @@ Regime: `{signal.Regime}`";
                             description = signal.Summary,
                             fields = new[]
                             {
-                                new { name = "Entry Zone", value = $"₹{signal.EntryMin:N2} - ₹{signal.EntryMax:N2}", inline = true },
-                                new { name = "Stop Loss", value = $"₹{signal.StopLoss:N2}", inline = true },
-                                new { name = "Target 1", value = $"₹{signal.Target1:N2}", inline = true },
+                                new { name = "Entry Zone", value = $"{cur}{signal.EntryMin:N2} - {cur}{signal.EntryMax:N2}", inline = true },
+                                new { name = "Stop Loss", value = $"{cur}{signal.StopLoss:N2}", inline = true },
+                                new { name = "Target 1", value = $"{cur}{signal.Target1:N2}", inline = true },
                                 new { name = "Setup Score", value = $"{signal.TotalScore}/100", inline = true },
                                 new { name = "Risk:Reward", value = $"{signal.RiskReward}:1", inline = true }
                             }
